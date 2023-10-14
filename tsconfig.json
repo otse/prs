@@ -15,12 +15,12 @@
 		"strictNullChecks": true
 	},
 	"files": [
-		"src/rpg2.d.ts"
+		"src/prs.d.ts"
 	],
 	"include": [
 		"./src"
 	],
 	"exclude": [
 		"node_modules"
-	]
+	],
 }

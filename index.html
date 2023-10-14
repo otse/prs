@@ -8,11 +8,29 @@
     -->
 	<script>
 		var app;
+		var THREE;
+		var collada_loader;
+		var first_person_controls;
 	</script>
 
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+				"three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+			}
+		}
+	</script>
+  
 	<script type="module">
 		import { default as backwards } from "/js/app.js";
+		import * as three from 'three';
+		import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
+		import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 		app = backwards;
+		THREE = three;
+		collada_loader = ColladaLoader;
+		first_person_controls = FirstPersonControls;
 	</script>
 
 	<script>
@@ -24,9 +42,9 @@
 
 <body>
 
-	<y-main>
+	<prs-main>
 
-	</y-main>
+	</prs-main>
 
 </body>
 

@@ -1,7 +1,7 @@
 import glob from "./glob.js";
 import hooks from "./hooks.js";
 import points from "./points.js";
-import rpg2 from "./rpg2.js";
+import prs from "./prs.js";
 
 namespace app {
     export enum KEY {
@@ -36,7 +36,7 @@ namespace app {
     export function boot(version: string) {
         console.log('app boot');
         hooks.call('AppBoot', null);
-        rpg2.boot();
+        prs.boot();
 
         mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         function onmousemove(e) {
@@ -121,7 +121,7 @@ namespace app {
 
     export function loop(timestamp) {
         requestAnimationFrame(loop);
-        rpg2.loop();
+        prs.loop();
         wheel = 0;
         post_keys();
         post_mouse_buttons();
