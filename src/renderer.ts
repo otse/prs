@@ -1,3 +1,5 @@
+import prs_controls from "./controls.js";
+
 namespace renderer {
 	// set up three.js here
 
@@ -19,7 +21,10 @@ namespace renderer {
 		const geometry = new THREE.BoxGeometry(1, 1, 1);
 		const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 		cube = new THREE.Mesh(geometry, material);
-		scene.add(cube);
+		//scene.add(cube);
+
+		const helper = new THREE.AxesHelper(1);
+		scene.add(helper);
 
 		camera.position.z = 5;
 
@@ -29,19 +34,16 @@ namespace renderer {
 		ambient_light = new THREE.AmbientLight(0xffffff, 1);
 		scene.add(ambient_light);
 
-		
 		/*let sun = new THREE.DirectionalLight(0xffffff, 1.0);
 		sun.position.set(-100, 100 * 2, 100 / 2);
 		scene.add(sun);
 		scene.add(sun.target);*/
-		
+
 		const prs_main = document.querySelector('prs-main')!;
-		
+
 		prs_main.appendChild(renderer.domElement);
-		
-		controls = new first_person_controls(camera, renderer.domElement);
-		controls.lookSpeed = 0.2;
-		controls.movementSpeed = 4;
+
+		controls = new prs_controls;
 
 		load_room();
 	}
@@ -56,30 +58,28 @@ namespace renderer {
 		});
 
 		const loader = new collada_loader(loadingManager);
+
 		loader.load('/assets/first_apartment_bad.dae', function (collada) {
 
-			//wastes.gview.zoomIndex = 0;
+			const myScene = collada.scene;
 
-			const my_scene = collada.scene;
-			const group = new THREE.Group();
-			group.rotation.set(0, -Math.PI / 2, 0);
-			group.add(my_scene);
-
-			scene.add(group);
-
-			/*myScene = collada.scene;
-			let group = new Group;
-			group.rotation.set(0, -Math.PI / 2, 0);
-			group.position.set(wastes.size, 0, 0);
-			group.add(myScene);
-
-			//console.log(elf);
-
-			function fix(material: MeshLambertMaterial) {
-				//material.color = new THREE.Color('red');
-				material.minFilter = material.magFilter = THREE.LinearFilter;
+			function fix_sticker(material) {
+				material.transparent = true;
+				material.polygonOffset = true;
+				material.polygonOffsetFactor = -1;
 			}
-			
+
+			function fix(material) {
+				if (material.name.includes('sticker'))
+					fix_sticker(material);
+				if (material.map) {
+					// mineify
+					//THREE.NearestFilter
+					material.map.minFilter = material.map.magFilter = THREE.NearestFilter;
+					material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+				}
+			}
+
 			function traversal(object) {
 				if (object.material) {
 					if (!object.material.length)
@@ -92,24 +92,11 @@ namespace renderer {
 
 			myScene.traverse(traversal);
 
-			//group.add(new AxesHelper(300));
-			console.log(myScene.scale);
+			const group = new THREE.Group();
+			//group.rotation.set(0, -Math.PI / 2, 0);
+			group.add(myScene);
 
-			const zoom = 90; // 60 hires, 30 lowres
-			myScene.scale.multiplyScalar(zoom);
-			//elf.rotation.set(-Math.PI / 2, 0, 0);
-			myScene.position.set(1, 0, 0);
-
-			ren.scene.add(group);
-
-			let sun = new DirectionalLight(0xffffff, 0.35);
-			sun.position.set(-wastes.size, wastes.size * 2, wastes.size / 2);
-			//sun.add(new AxesHelper(100));
-			group.add(sun);
-			group.add(sun.target);
-
-			window['group'] = group;
-			window['elf'] = myScene;*/
+			scene.add(group);
 
 		});
 	}
@@ -117,7 +104,8 @@ namespace renderer {
 	export function render() {
 		delta = clock.getDelta();
 
-		controls.update(delta);
+		//controls.update(delta);
+		controls.loop(delta);
 
 		cube.rotation.x += 0.01;
 		cube.rotation.y += 0.01;

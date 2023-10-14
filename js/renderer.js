@@ -1,3 +1,4 @@
+import prs_controls from "./controls.js";
 var renderer;
 (function (renderer_1) {
     // set up three.js here
@@ -11,7 +12,9 @@ var renderer;
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         cube = new THREE.Mesh(geometry, material);
-        renderer_1.scene.add(cube);
+        //scene.add(cube);
+        const helper = new THREE.AxesHelper(1);
+        renderer_1.scene.add(helper);
         renderer_1.camera.position.z = 5;
         renderer_1.renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer_1.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -23,9 +26,7 @@ var renderer;
         scene.add(sun.target);*/
         const prs_main = document.querySelector('prs-main');
         prs_main.appendChild(renderer_1.renderer.domElement);
-        renderer_1.controls = new first_person_controls(renderer_1.camera, renderer_1.renderer.domElement);
-        renderer_1.controls.lookSpeed = 0.2;
-        renderer_1.controls.movementSpeed = 4;
+        renderer_1.controls = new prs_controls;
         load_room();
     }
     renderer_1.boot = boot;
@@ -36,25 +37,22 @@ var renderer;
         });
         const loader = new collada_loader(loadingManager);
         loader.load('/assets/first_apartment_bad.dae', function (collada) {
-            //wastes.gview.zoomIndex = 0;
-            const my_scene = collada.scene;
-            const group = new THREE.Group();
-            group.rotation.set(0, -Math.PI / 2, 0);
-            group.add(my_scene);
-            renderer_1.scene.add(group);
-            /*myScene = collada.scene;
-            let group = new Group;
-            group.rotation.set(0, -Math.PI / 2, 0);
-            group.position.set(wastes.size, 0, 0);
-            group.add(myScene);
-
-            //console.log(elf);
-
-            function fix(material: MeshLambertMaterial) {
-                //material.color = new THREE.Color('red');
-                material.minFilter = material.magFilter = THREE.LinearFilter;
+            const myScene = collada.scene;
+            function fix_sticker(material) {
+                material.transparent = true;
+                material.polygonOffset = true;
+                material.polygonOffsetFactor = -1;
             }
-            
+            function fix(material) {
+                if (material.name.includes('sticker'))
+                    fix_sticker(material);
+                if (material.map) {
+                    // mineify
+                    //THREE.NearestFilter
+                    material.map.minFilter = material.map.magFilter = THREE.NearestFilter;
+                    material.map.anisotropy = renderer_1.renderer.capabilities.getMaxAnisotropy();
+                }
+            }
             function traversal(object) {
                 if (object.material) {
                     if (!object.material.length)
@@ -64,32 +62,17 @@ var renderer;
                             fix(material);
                 }
             }
-
             myScene.traverse(traversal);
-
-            //group.add(new AxesHelper(300));
-            console.log(myScene.scale);
-
-            const zoom = 90; // 60 hires, 30 lowres
-            myScene.scale.multiplyScalar(zoom);
-            //elf.rotation.set(-Math.PI / 2, 0, 0);
-            myScene.position.set(1, 0, 0);
-
-            ren.scene.add(group);
-
-            let sun = new DirectionalLight(0xffffff, 0.35);
-            sun.position.set(-wastes.size, wastes.size * 2, wastes.size / 2);
-            //sun.add(new AxesHelper(100));
-            group.add(sun);
-            group.add(sun.target);
-
-            window['group'] = group;
-            window['elf'] = myScene;*/
+            const group = new THREE.Group();
+            //group.rotation.set(0, -Math.PI / 2, 0);
+            group.add(myScene);
+            renderer_1.scene.add(group);
         });
     }
     function render() {
         renderer_1.delta = renderer_1.clock.getDelta();
-        renderer_1.controls.update(renderer_1.delta);
+        //controls.update(delta);
+        renderer_1.controls.loop(renderer_1.delta);
         cube.rotation.x += 0.01;
         cube.rotation.y += 0.01;
         renderer_1.renderer.setRenderTarget(null);
