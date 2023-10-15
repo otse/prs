@@ -14,7 +14,7 @@ namespace renderer {
 		clock = new THREE.Clock();
 
 		scene = new THREE.Scene();
-		scene.background = new THREE.Color('#444');
+		scene.background = new THREE.Color('white');
 
 		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -30,14 +30,22 @@ namespace renderer {
 
 		renderer = new THREE.WebGLRenderer({ antialias: false });
 		renderer.setSize(window.innerWidth, window.innerHeight);
+		//renderer.shadowMap.enabled = true;
+		renderer.shadowMap.type = THREE.BasicShadowMap;
 
-		ambient_light = new THREE.AmbientLight(0xffffff, 1);
+		ambient_light = new THREE.AmbientLight(0xffffff, 2);
 		scene.add(ambient_light);
 
-		/*let sun = new THREE.DirectionalLight(0xffffff, 1.0);
-		sun.position.set(-100, 100 * 2, 100 / 2);
-		scene.add(sun);
-		scene.add(sun.target);*/
+		let sun = new THREE.DirectionalLight(0xffffff, 2.0);
+		sun.shadow.mapSize.width = 2048;
+		sun.shadow.mapSize.height = 2048;
+		sun.shadow.camera.near = 0.5;
+		sun.shadow.camera.far = 500;
+		const extend = 1000;
+		sun.position.set(-30, 200, -150);
+		//sun.castShadow = true;
+		//scene.add(sun);
+		scene.add(sun.target);
 
 		const prs_main = document.querySelector('prs-main')!;
 
@@ -81,6 +89,8 @@ namespace renderer {
 			}
 
 			function traversal(object) {
+				object.castShadow = true;
+				object.receiveShadow = true;
 				if (object.material) {
 					if (!object.material.length)
 						fix(object.material);

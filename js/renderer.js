@@ -7,7 +7,7 @@ var renderer;
         console.log('renderer boot');
         renderer_1.clock = new THREE.Clock();
         renderer_1.scene = new THREE.Scene();
-        renderer_1.scene.background = new THREE.Color('#444');
+        renderer_1.scene.background = new THREE.Color('white');
         renderer_1.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -18,12 +18,20 @@ var renderer;
         renderer_1.camera.position.z = 5;
         renderer_1.renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer_1.renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer_1.ambient_light = new THREE.AmbientLight(0xffffff, 1);
+        //renderer.shadowMap.enabled = true;
+        renderer_1.renderer.shadowMap.type = THREE.BasicShadowMap;
+        renderer_1.ambient_light = new THREE.AmbientLight(0xffffff, 2);
         renderer_1.scene.add(renderer_1.ambient_light);
-        /*let sun = new THREE.DirectionalLight(0xffffff, 1.0);
-        sun.position.set(-100, 100 * 2, 100 / 2);
-        scene.add(sun);
-        scene.add(sun.target);*/
+        let sun = new THREE.DirectionalLight(0xffffff, 2.0);
+        sun.shadow.mapSize.width = 2048;
+        sun.shadow.mapSize.height = 2048;
+        sun.shadow.camera.near = 0.5;
+        sun.shadow.camera.far = 500;
+        const extend = 1000;
+        sun.position.set(-30, 200, -150);
+        //sun.castShadow = true;
+        //scene.add(sun);
+        renderer_1.scene.add(sun.target);
         const prs_main = document.querySelector('prs-main');
         prs_main.appendChild(renderer_1.renderer.domElement);
         renderer_1.controls = new prs_controls;
@@ -54,6 +62,8 @@ var renderer;
                 }
             }
             function traversal(object) {
+                object.castShadow = true;
+                object.receiveShadow = true;
                 if (object.material) {
                     if (!object.material.length)
                         fix(object.material);

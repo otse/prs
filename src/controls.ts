@@ -20,27 +20,19 @@ class prs_controls {
 		const controler = this.examples;
 
 		instructions.addEventListener('click', function () {
-
 			controler.lock();
-
 		});
 
 		this.examples.addEventListener('lock', function () {
-
 			console.log('lock');
-
 			instructions.style.display = 'none';
 			//blocker.style.display = 'none';
-
 		});
 
 		this.examples.addEventListener('unlock', function () {
-
 			console.log('unlock');
-
 			//blocker.style.display = 'block';
 			instructions.style.display = '';
-
 		});
 
 		renderer.scene.add(this.examples.getObject());
