@@ -18,7 +18,7 @@ var renderer;
         renderer_1.camera.position.z = 5;
         renderer_1.renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer_1.renderer.setSize(window.innerWidth, window.innerHeight);
-        //renderer.shadowMap.enabled = true;
+        renderer_1.renderer.shadowMap.enabled = true;
         renderer_1.renderer.shadowMap.type = THREE.BasicShadowMap;
         renderer_1.ambient_light = new THREE.AmbientLight(0xffffff, 2);
         renderer_1.scene.add(renderer_1.ambient_light);
@@ -29,22 +29,29 @@ var renderer;
         sun.shadow.camera.far = 500;
         const extend = 1000;
         sun.position.set(-30, 200, -150);
-        //sun.castShadow = true;
-        //scene.add(sun);
+        sun.castShadow = true;
+        renderer_1.scene.add(sun);
         renderer_1.scene.add(sun.target);
         const prs_main = document.querySelector('prs-main');
         prs_main.appendChild(renderer_1.renderer.domElement);
         renderer_1.controls = new prs_controls;
+        window.addEventListener('resize', onWindowResize);
         load_room();
     }
     renderer_1.boot = boot;
+    function onWindowResize() {
+        renderer_1.renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer_1.camera.aspect = window.innerWidth / window.innerHeight;
+        renderer_1.camera.updateProjectionMatrix();
+        render();
+    }
     function load_room() {
         // .. boot er up
         const loadingManager = new THREE.LoadingManager(function () {
             //ren.scene.add(elf);
         });
         const loader = new collada_loader(loadingManager);
-        loader.load('/assets/first_apartment_bad.dae', function (collada) {
+        loader.load('./assets/first_apartment_bad.dae', function (collada) {
             const myScene = collada.scene;
             function fix_sticker(material) {
                 material.transparent = true;

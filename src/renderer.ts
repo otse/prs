@@ -30,7 +30,7 @@ namespace renderer {
 
 		renderer = new THREE.WebGLRenderer({ antialias: false });
 		renderer.setSize(window.innerWidth, window.innerHeight);
-		//renderer.shadowMap.enabled = true;
+		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = THREE.BasicShadowMap;
 
 		ambient_light = new THREE.AmbientLight(0xffffff, 2);
@@ -43,8 +43,8 @@ namespace renderer {
 		sun.shadow.camera.far = 500;
 		const extend = 1000;
 		sun.position.set(-30, 200, -150);
-		//sun.castShadow = true;
-		//scene.add(sun);
+		sun.castShadow = true;
+		scene.add(sun);
 		scene.add(sun.target);
 
 		const prs_main = document.querySelector('prs-main')!;
@@ -53,7 +53,20 @@ namespace renderer {
 
 		controls = new prs_controls;
 
+		window.addEventListener( 'resize', onWindowResize );
+
 		load_room();
+	}
+
+	function onWindowResize() {
+
+		renderer.setSize( window.innerWidth, window.innerHeight );
+
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+
+		render();
+
 	}
 
 	function load_room() {
@@ -67,7 +80,7 @@ namespace renderer {
 
 		const loader = new collada_loader(loadingManager);
 
-		loader.load('/assets/first_apartment_bad.dae', function (collada) {
+		loader.load('./assets/first_apartment_bad.dae', function (collada) {
 
 			const myScene = collada.scene;
 
