@@ -1,12 +1,12 @@
 import app from "./app.js";
 import renderer from "./renderer.js";
-class prs_controls {
+class day_controls {
     examples;
     constructor() {
         this.setup();
     }
     setup() {
-        const instructions = document.querySelector('prs-instructions');
+        const instructions = document.querySelector('day-instructions');
         this.examples = new pointer_lock_controls(renderer.camera, renderer.renderer.domElement);
         this.examples.enabled = true;
         this.examples.getObject().position.y = 1.5;
@@ -43,7 +43,6 @@ class prs_controls {
             this.examples.getObject().position.y += 1 * delta;
         if (app.prompt_key('f'))
             this.examples.getObject().position.y -= 1 * delta;
-        ;
     }
 }
-export default prs_controls;
+export default day_controls;

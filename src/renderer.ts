@@ -1,4 +1,4 @@
-import prs_controls from "./controls.js";
+import day_controls from "./controls.js";
 
 namespace renderer {
 	// set up three.js here
@@ -47,11 +47,11 @@ namespace renderer {
 		scene.add(sun);
 		scene.add(sun.target);
 
-		const prs_main = document.querySelector('prs-main')!;
+		const day_main = document.querySelector('day-main')!;
 
-		prs_main.appendChild(renderer.domElement);
+		day_main.appendChild(renderer.domElement);
 
-		controls = new prs_controls;
+		controls = new day_controls;
 
 		window.addEventListener( 'resize', onWindowResize );
 

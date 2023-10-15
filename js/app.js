@@ -1,6 +1,6 @@
 import hooks from "./hooks.js";
 import points from "./points.js";
-import prs from "./prs.js";
+import day from "./day.js";
 var app;
 (function (app) {
     let KEY;
@@ -41,7 +41,7 @@ var app;
     function boot(version) {
         console.log('app boot');
         hooks.call('AppBoot', null);
-        prs.boot();
+        day.boot();
         app.mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         function onmousemove(e) {
             pos[0] = e.clientX;
@@ -123,7 +123,7 @@ var app;
     }
     function loop(timestamp) {
         requestAnimationFrame(loop);
-        prs.loop();
+        day.loop();
         app.wheel = 0;
         post_keys();
         post_mouse_buttons();

@@ -15,7 +15,7 @@
 		"strictNullChecks": true
 	},
 	"files": [
-		"src/prs.d.ts"
+		"src/day.d.ts"
 	],
 	"include": [
 		"./src"

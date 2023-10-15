@@ -3,8 +3,8 @@ import points from "./points.js";
 import renderer from "./renderer.js";
 import viewport from "./viewport.js";
 
-namespace prs {
-	export var prs_main;
+namespace day {
+	export var day_main;
 
 	export var gviewport: viewport;
 
@@ -13,7 +13,7 @@ namespace prs {
 
 		gviewport = new viewport;
 
-		prs_main = document.querySelector('prs-main');
+		day_main = document.querySelector('day-main');
 
 		points.add([0, 0], [1, 1]);
 
@@ -21,10 +21,9 @@ namespace prs {
 	}
 
 	export function loop() {
-		const x = app.prompt_key('x');
-		console.log('woo' + x);
 
 		renderer.render();
+
 	}
 }
 
@@ -33,4 +32,4 @@ namespace prs {
 
 })()
 
-export default prs;
+export default day;

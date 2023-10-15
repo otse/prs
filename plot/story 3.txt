@@ -2,4 +2,14 @@ this one is more simple than #1. it's a game about a game.
 
 you start in your bedroom. there's a bed, a microwave and a tv.
 
-your apartment is empty because you are chill.
+your apartment is empty because you are chill. this is perfect living.
+
+you have a post it note of zoning out cat. there's an alexa unit on a table.
+
+microsoft sam generator:
+https://www.tetyys.com/SAPI4/
+
+pitch 200, speed 160
+"hey. the boss e-mailed. he needs you today at work."
+
+you go to the car and drive to work.
