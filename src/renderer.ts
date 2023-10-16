@@ -50,6 +50,7 @@ namespace renderer {
 		const day_main = document.querySelector('day-main')!;
 
 		day_main.appendChild(renderer.domElement);
+		// test
 
 		controls = new day_controls;
 

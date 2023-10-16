@@ -34,6 +34,7 @@ var renderer;
         renderer_1.scene.add(sun.target);
         const day_main = document.querySelector('day-main');
         day_main.appendChild(renderer_1.renderer.domElement);
+        // test
         renderer_1.controls = new day_controls;
         window.addEventListener('resize', onWindowResize);
         load_room();

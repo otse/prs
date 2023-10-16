@@ -1,0 +1,4 @@
+microsoft sam generator
+https://www.tetyys.com/SAPI4/
+
+set pitch to 200 and speed to 150

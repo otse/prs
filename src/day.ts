@@ -9,7 +9,7 @@ namespace day {
 	export var gviewport: viewport;
 
 	export function boot() {
-		console.log('rpg2 setting up');
+		console.log('day setting up');
 
 		gviewport = new viewport;
 

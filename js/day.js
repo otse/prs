@@ -4,7 +4,7 @@ import viewport from "./viewport.js";
 var day;
 (function (day) {
     function boot() {
-        console.log('rpg2 setting up');
+        console.log('day setting up');
         day.gviewport = new viewport;
         day.day_main = document.querySelector('day-main');
         points.add([0, 0], [1, 1]);

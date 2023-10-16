@@ -1,0 +1,32 @@
+if there is a plot it should fit the silly graphics.
+
+there's a post it note of a zoning out cat.
+there's an amazon alexa and a cardboard box with compact discs.
+life is minimal here.
+
+whatever could be the point of such a 3d game?
+
+you go to work. you work at the it department of a big business.
+
+you have to repair computers, and answer questions from employees and executives.
+
+the goal of the game is to not say rude things to the wrong people, and not to
+fail the simple tasks you are given.
+
+when you are rude, or answer incorrectly, you will get a negative mark. on the other hand,
+when you are helpful and or polite, you get a positive mark. sometimes an answer will be right,
+but also rude, and you will still get a negative mark.
+
+try not to fall to -5, or you will go to HR, and will be given one last chance.
+
+example: an older employee with an important function asks you for a usb stick:
+answers:
+- ill get you one right away
+- have you tried network file sharing
+
+example: an executive wants an important file back on his computer
+answers:
+- have you looked in the recycle bin?
+- i will try to find it in the backup
+
+preliminary status: the suck. answers are too obviously negative or positive.
