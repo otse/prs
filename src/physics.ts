@@ -2,6 +2,9 @@ import props from "./props.js";
 
 namespace physics {
 
+	export const stepFrequency = 60;
+	export const maxSubSteps = 3;
+
 	export var world, physicsMaterial,
 		walls = [], balls = [], ballMeshes = [], boxes = [], boxMeshes = [];
 
@@ -42,8 +45,25 @@ namespace physics {
 
 	}
 
+	var lastCallTime = 0;
+
 	export function loop(delta: number) {
-		world.step(delta);
+
+		const timeStep = 1 / stepFrequency;
+
+		const now = Date.now() / 1000;
+
+		if (!lastCallTime) {
+			world.step(timeStep);
+			lastCallTime = now;
+			return;
+		}
+
+		var timeSinceLastCall = now - lastCallTime;
+
+		world.step(timeStep, timeSinceLastCall, maxSubSteps);
+
+		lastCallTime = now;
 
 		// Step the physics world
 		//world.step(timeStep);

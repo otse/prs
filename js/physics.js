@@ -1,5 +1,7 @@
 var physics;
 (function (physics) {
+    physics.stepFrequency = 60;
+    physics.maxSubSteps = 3;
     physics.walls = [], physics.balls = [], physics.ballMeshes = [], physics.boxes = [], physics.boxMeshes = [];
     function boot() {
         physics.world = new CANNON.World();
@@ -30,8 +32,18 @@ var physics;
         physics.world.addBody(groundBody);
     }
     physics.boot = boot;
+    var lastCallTime = 0;
     function loop(delta) {
-        physics.world.step(delta);
+        const timeStep = 1 / physics.stepFrequency;
+        const now = Date.now() / 1000;
+        if (!lastCallTime) {
+            physics.world.step(timeStep);
+            lastCallTime = now;
+            return;
+        }
+        var timeSinceLastCall = now - lastCallTime;
+        physics.world.step(timeStep, timeSinceLastCall, physics.maxSubSteps);
+        lastCallTime = now;
         // Step the physics world
         //world.step(timeStep);
         // Copy coordinates from Cannon.js to Three.js
