@@ -3,18 +3,55 @@ i shouldnt diverge. perhaps this is all i'm good for. to shitpost.
 
 idea. you start in apartment. you put some pts into your character.
 skills:
-good looking - religion - car person - cat person - money
+good looking - zuck - religion - car person - mone
 
-you go downstairs but the front door is locked. the janitor is mopping. he wants money
-for the key.
-when you got enough points in money, you can bribe him for the key.
-you can also do a religion check on him if you got the points invested. this will question his
-alignment to civilization and whether looting people is the right course of action.
+you can choose 2 skills
+for example, you can have zuck, and religion
 
-when you have neither points enough you will have to crawl through a vent.
+alexa wakes you up. she says:
+hey. its me alexa. your virtual assistant.
+...
+you had too many red bulls last night. and pizza. your world is spinning, is it not?
+anyway.
+listen. do as i say, or today will be your last.
+you did not pay rent yesterday. the landlord will be here any moment.
+whatever you do, remember: don't talk about his outfit.
 
-when you get out the door there's your car. a cat is sitting on the car. if you are a cat
-person, you can coax it. also if you are religious enough you can drive with the car on the
-hood (it is unorthodox).
+hasbullah appears and asks: i am here for rent. do you have the mone
+[zuck initiative] i would probably choose not to do that publicly here
+   -> hasb: ok but i will need the mone eventually
+[mone] yes, here
+   -> hasb: thanks. airbnb was such a good idea
+[missing skill] i dont have the mone
+   -> hasb: i accept an object of >= value
+[informal] what are you wearing?
 
-you park at the local cofee house that you frequent. the clerk works there
+when you ask about his outfit, you die.
+
+when you miss the skills, alexa will help out.
+alexa: we can handle this. just give him the fridge. or the toilet.
+
+-> when you try to give hasbullah the toilet: no. something else
+(this means alexa isn't always right)
+
+not much can go wrong in the intro of the game. you give hasbullah mone,
+use your zuck instincts or simply give him your fridge as payment.
+
+alexa:
+you did it. you restored the order. but today will still be
+full of difficulties. let me help. i know the way through the fog.
+also, you have to be at work by 10.
+
+you go downstairs. the janitor is mopping. when he turns to look at you,
+its hasbullah in a different style. as you try to pass, he initiates a talk.
+
+the floors are wet. you're welcome.
+
+[percepti-bobble] wait, aren't you the landlord?
+[affirmation] i shall watch my step
+
+when you talk about the way he looks, you die, as warned by alexa
+
+in front of your block is parked your car. when you have mone, it is a nicer car.
+
+a cat is sitting on the car.
