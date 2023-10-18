@@ -1,3 +1,4 @@
+import app from "./app.js";
 import player from "./player.js";
 import props from "./props.js";
 
@@ -126,8 +127,23 @@ namespace renderer {
 		});
 	}
 
+	var prevTime = 0, time = 0, frames = 0
+	export var fps = 0;
+
 	export function render() {
 		delta = clock.getDelta();
+		
+		frames ++;
+		time = ( performance || Date ).now();
+
+		if ( time >= prevTime + 1000 ) {
+
+			fps = ( frames * 1000 ) / ( time - prevTime );
+
+			prevTime = time;
+			frames = 0;
+			app.set_innerhtml('day-stats', `fps: ${fps}`);
+		}
 
 		cube.rotation.x += 0.01;
 		cube.rotation.y += 0.01;

@@ -1,3 +1,4 @@
+import app from "./app.js";
 import props from "./props.js";
 var renderer;
 (function (renderer_1) {
@@ -87,8 +88,18 @@ var renderer;
             renderer_1.scene.add(group);
         });
     }
+    var prevTime = 0, time = 0, frames = 0;
+    renderer_1.fps = 0;
     function render() {
         renderer_1.delta = renderer_1.clock.getDelta();
+        frames++;
+        time = (performance || Date).now();
+        if (time >= prevTime + 1000) {
+            renderer_1.fps = (frames * 1000) / (time - prevTime);
+            prevTime = time;
+            frames = 0;
+            app.set_innerhtml('day-stats', `fps: ${renderer_1.fps}`);
+        }
         cube.rotation.x += 0.01;
         cube.rotation.y += 0.01;
         renderer_1.renderer.setRenderTarget(null);

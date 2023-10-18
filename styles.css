@@ -14,3 +14,13 @@ day-instructions {
   display: flex;
   position: absolute;
 }
+day-stats {
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  color: green;
+}
