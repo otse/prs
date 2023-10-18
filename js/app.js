@@ -1,5 +1,5 @@
 import hooks from "./hooks.js";
-import points from "./points.js";
+import points from "./pts.js";
 import day from "./day.js";
 var app;
 (function (app) {
@@ -121,22 +121,24 @@ var app;
             else if (mb[b] == MB.UP)
                 mb[b] = MB.OFF;
     }
-    app.time = 0;
+    app.delta = 0;
+    app.last = 0;
     function loop(timestamp) {
         requestAnimationFrame(loop);
-        let delta = Date.now() - app.time;
-        app.time = Date.now();
-        day.loop(delta);
+        const now = (performance || Date).now();
+        app.delta = (now - app.last) / 1000;
+        app.last = now;
+        day.loop(app.delta);
         app.wheel = 0;
         post_keys();
         post_mouse_buttons();
     }
     app.loop = loop;
-    function set_innerhtml(selector, html) {
+    function fluke_set_innerhtml(selector, html) {
         let element = document.querySelectorAll(selector)[0];
         element.innerHTML = html;
     }
-    app.set_innerhtml = set_innerhtml;
+    app.fluke_set_innerhtml = fluke_set_innerhtml;
 })(app || (app = {}));
 window['App'] = app;
 export default app;

@@ -1,6 +1,6 @@
 import physics from "./physics.js";
 import player from "./player.js";
-import points from "./points.js";
+import points from "./pts.js";
 import renderer from "./renderer.js";
 import viewport from "./viewport.js";
 var day;
@@ -17,7 +17,7 @@ var day;
     }
     day.boot = boot;
     function loop(delta) {
-        day.gplayer.loop(day.timestep);
+        day.gplayer.loop(delta);
         physics.loop(day.timestep);
         renderer.render();
     }

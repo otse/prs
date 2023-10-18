@@ -1,5 +1,6 @@
 import app from "./app.js";
 import physics from "./physics.js";
+import pts from "./pts.js";
 import renderer from "./renderer.js";
 
 // https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/PointerLockControls.js
@@ -47,36 +48,51 @@ class player {
 	}
 
 	createPhysics() {
+		// Create a slippery material (friction coefficient = 0.0)
+		var playerMaterial = new CANNON.Material('physics');
+		const physics_mat = new CANNON.ContactMaterial(playerMaterial, playerMaterial, {
+			friction: 200.0,
+			restitution: 0.01,
+		});
+
+		// We must add the contact materials to the world
+		physics.world.addContactMaterial(physics_mat);
+
 		// Create a sphere
-		var mass = 5, radius = 1.3;
+		const radius = 1.3;
 		var sphereShape = new CANNON.Sphere(radius);
-		var sphereBody = new CANNON.Body({ mass: mass });
+		var sphereBody = new CANNON.Body({ mass: 5, material: playerMaterial });
 		sphereBody.addShape(sphereShape);
 		sphereBody.position.set(0, 5, 0);
-		sphereBody.linearDamping = 0.9;
-		this.cannonBody = sphereBody;
-		this.velocity = this.cannonBody.velocity;
+		sphereBody.linearDamping = 0.999;
 		physics.world.addBody(sphereBody);
+		this.cannonBody = sphereBody;
 
-		var contactNormal = new CANNON.Vec3(); // Normal in the contact, pointing *out* of whatever the player touched
-		var upAxis = new CANNON.Vec3(0, 1, 0);
-
-		sphereBody.addEventListener("collide", function (e) {
-			var contact = e.contact;
+		const contactNormal = new CANNON.Vec3() // Normal in the contact, pointing *out* of whatever the player touched
+		const upAxis = new CANNON.Vec3(0, 1, 0)
+		this.cannonBody.addEventListener('collide', (event) => {
+			const { contact } = event
 
 			// contact.bi and contact.bj are the colliding bodies, and contact.ni is the collision normal.
 			// We do not yet know which one is which! Let's check.
-			if (contact.bi.id == sphereBody.id)  // bi is the player body, flip the contact normal
-				contact.ni.negate(contactNormal);
-			else
-				contactNormal.copy(contact.ni); // bi is something else. Keep the normal as it is
+			if (contact.bi.id === this.cannonBody.id) {
+				// bi is the player body, flip the contact normal
+				contact.ni.negate(contactNormal)
+			} else {
+				// bi is something else. Keep the normal as it is
+				contactNormal.copy(contact.ni)
+			}
 
 			// If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.
-			if (contactNormal.dot(upAxis) > 0.5) // Use a "good" threshold value between 0 and 1 here!
-				this.canJump = true;
-		});
+			if (contactNormal.dot(upAxis) > 0.5) {
+				// Use a "good" threshold value between 0 and 1 here!
+				this.canJump = true
+			}
+		})
+
+		this.velocity = this.cannonBody.velocity;
 	}
-	velocityFactor = 20.0;
+	force = 20.0;
 	quat = new THREE.Quaternion();
 
 	// Moves the camera to the Cannon.js object position and adds velocity to the object if the run key is down
@@ -84,37 +100,49 @@ class player {
 	euler = new THREE.Euler();
 	loop(delta: number) {
 
-		if (this.plc.enabled === false) return;
-
-		delta *= 0.1;
+		if (this.plc.enabled === false)
+			return;
 
 		this.inputVelocity.set(0, 0, 0);
 
+		let x = 0, y = 0;
+
 		if (app.prompt_key('w')) {
-			
-			this.inputVelocity.z = -this.velocityFactor * delta;
+			y = 1;
 		}
 		if (app.prompt_key('s')) {
-			this.inputVelocity.z = this.velocityFactor * delta;
+			y = -1;
 		}
-
 		if (app.prompt_key('a')) {
-			this.inputVelocity.x = -this.velocityFactor * delta;
+			x = -1;
 		}
 		if (app.prompt_key('d')) {
-			this.inputVelocity.x = this.velocityFactor * delta;
+			x = 1;
+		}
+		if (app.prompt_key(' ') && this.canJump) {
+			this.velocity.y = 10;
+			this.canJump = false;
 		}
 
+		const force = this.force * delta;
+		let angle = pts.angle([0, 0], [x, y]);
+
+		if (x || y) {
+			x = force * Math.sin(angle);
+			y = force * Math.cos(angle);
+
+			this.inputVelocity.x = x;
+			this.inputVelocity.z = y;
+		}
 		const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
 		const camera = this.plc.getObject();
 		_euler.setFromQuaternion(camera.quaternion);
 		// Convert velocity to world coordinates
 		this.euler.x = _euler.x;
 		this.euler.y = _euler.y;
-		this.euler.order = "XYZ";
+		this.euler.order = "YXZ";
 		this.quat.setFromEuler(this.euler);
 		this.inputVelocity.applyQuaternion(this.quat);
-		//quat.multiplyVector3(this.inputVelocity);
 
 		// Add to the object
 		this.velocity.x += this.inputVelocity.x;
@@ -122,33 +150,6 @@ class player {
 
 		this.plc.getObject().position.copy(this.cannonBody.position);
 	}
-
-	/*loop(delta: number) {
-
-		const sprint = 2;
-		let speed = 2;
-
-		if (app.prompt_key('shift'))
-			speed *= sprint;
-
-		if (app.prompt_key('w'))
-			this.examples.moveForward(speed * delta);
-
-		if (app.prompt_key('s'))
-			this.examples.moveForward(-speed * delta);
-
-		if (app.prompt_key('d'))
-			this.examples.moveRight(speed * delta);
-
-		if (app.prompt_key('a'))
-			this.examples.moveRight(-speed * delta);
-
-		if (app.prompt_key('r'))
-			this.examples.getObject().position.y += 1 * delta;
-
-		if (app.prompt_key('f'))
-			this.examples.getObject().position.y -= 1 * delta;
-	}*/
 }
 
 export default player;

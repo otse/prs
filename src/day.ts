@@ -1,7 +1,7 @@
 import app from "./app.js";
 import physics from "./physics.js";
 import player from "./player.js";
-import points from "./points.js";
+import points from "./pts.js";
 import renderer from "./renderer.js";
 import viewport from "./viewport.js";
 
@@ -30,7 +30,7 @@ namespace day {
 
 	export function loop(delta: number) {
 
-		gplayer.loop(day.timestep);
+		gplayer.loop(delta);
 		physics.loop(day.timestep);
 		renderer.render();
 

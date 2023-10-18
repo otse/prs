@@ -132,7 +132,7 @@ namespace renderer {
 
 	export function render() {
 		delta = clock.getDelta();
-		
+
 		frames ++;
 		time = ( performance || Date ).now();
 
@@ -142,7 +142,7 @@ namespace renderer {
 
 			prevTime = time;
 			frames = 0;
-			app.set_innerhtml('day-stats', `fps: ${fps}`);
+			app.fluke_set_innerhtml('day-stats', `fps: ${fps}`);
 		}
 
 		cube.rotation.x += 0.01;

@@ -1,49 +1,43 @@
 var physics;
 (function (physics) {
-    physics.stepFrequency = 60;
-    physics.maxSubSteps = 3;
     physics.walls = [], physics.balls = [], physics.ballMeshes = [], physics.boxes = [], physics.boxMeshes = [];
     function boot() {
         physics.world = new CANNON.World();
-        physics.world.quatNormalizeSkip = 0;
-        physics.world.quatNormalizeFast = false;
-        physics.world.gravity.set(0, -20, 0);
-        var solver = new CANNON.GSSolver();
+        // Tweak contact properties.
+        // Contact stiffness - use to make softer/harder contacts
         physics.world.defaultContactMaterial.contactEquationStiffness = 1e9;
+        // Stabilization time in number of timesteps
         physics.world.defaultContactMaterial.contactEquationRelaxation = 4;
-        var split = true;
-        if (split)
-            physics.world.solver = new CANNON.SplitSolver(solver);
-        else
-            physics.world.solver = solver;
+        const solver = new CANNON.GSSolver();
+        solver.iterations = 7;
+        solver.tolerance = 0.1;
+        physics.world.solver = new CANNON.SplitSolver(solver);
+        // use this to test non-split solver
+        // world.solver = solver
         physics.world.gravity.set(0, -20, 0);
-        physics.world.broadphase = new CANNON.NaiveBroadphase();
         // Create a slippery material (friction coefficient = 0.0)
-        physics.physicsMaterial = new CANNON.Material("slipperyMaterial");
-        var physicsContactMaterial = new CANNON.ContactMaterial(physics.physicsMaterial, physics.physicsMaterial, 0.0, // friction coefficient
-        0.3 // restitution
-        );
+        physics.groundMaterial = new CANNON.Material('physics');
+        const groundContactMaterial = new CANNON.ContactMaterial(physics.groundMaterial, physics.groundMaterial, {
+            friction: 10.0,
+            restitution: 0.01,
+        });
         // We must add the contact materials to the world
-        physics.world.addContactMaterial(physicsContactMaterial);
-        var groundShape = new CANNON.Plane();
-        var groundBody = new CANNON.Body({ mass: 0 });
+        physics.world.addContactMaterial(groundContactMaterial);
+        // Create the ground plane
+        const groundShape = new CANNON.Plane();
+        const groundBody = new CANNON.Body({ mass: 0, material: groundContactMaterial });
         groundBody.addShape(groundShape);
-        groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+        groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
         physics.world.addBody(groundBody);
     }
     physics.boot = boot;
     var lastCallTime = 0;
+    const timeStep = 1 / 60;
     function loop(delta) {
-        const timeStep = 1 / physics.stepFrequency;
-        const now = Date.now() / 1000;
-        if (!lastCallTime) {
-            physics.world.step(timeStep);
-            lastCallTime = now;
-            return;
-        }
-        var timeSinceLastCall = now - lastCallTime;
-        physics.world.step(timeStep, timeSinceLastCall, physics.maxSubSteps);
-        lastCallTime = now;
+        const time = performance.now() / 1000;
+        const dt = time - lastCallTime;
+        lastCallTime = time;
+        physics.world.step(timeStep, dt);
         // Step the physics world
         //world.step(timeStep);
         // Copy coordinates from Cannon.js to Three.js

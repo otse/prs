@@ -98,7 +98,7 @@ var renderer;
             renderer_1.fps = (frames * 1000) / (time - prevTime);
             prevTime = time;
             frames = 0;
-            app.set_innerhtml('day-stats', `fps: ${renderer_1.fps}`);
+            app.fluke_set_innerhtml('day-stats', `fps: ${renderer_1.fps}`);
         }
         cube.rotation.x += 0.01;
         cube.rotation.y += 0.01;
