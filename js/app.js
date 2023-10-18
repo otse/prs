@@ -121,9 +121,12 @@ var app;
             else if (mb[b] == MB.UP)
                 mb[b] = MB.OFF;
     }
+    app.time = 0;
     function loop(timestamp) {
         requestAnimationFrame(loop);
-        day.loop();
+        let delta = Date.now() - app.time;
+        app.time = Date.now();
+        day.loop(delta);
         app.wheel = 0;
         post_keys();
         post_mouse_buttons();

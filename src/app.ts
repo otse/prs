@@ -119,9 +119,12 @@ namespace app {
                 mb[b] = MB.OFF;
     }
 
+    export var time = 0;
     export function loop(timestamp) {
         requestAnimationFrame(loop);
-        day.loop();
+        let delta = Date.now() - time;
+        time = Date.now();
+        day.loop(delta);
         wheel = 0;
         post_keys();
         post_mouse_buttons();

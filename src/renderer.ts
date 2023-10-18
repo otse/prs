@@ -1,9 +1,10 @@
-import day_controls from "./controls.js";
+import player from "./player.js";
+import props from "./props.js";
 
 namespace renderer {
 	// set up three.js here
 
-	export var scene, camera, renderer, ambient_light, controls, clock, delta;
+	export var scene, camera, renderer, ambient_light, clock, delta;
 
 	var cube;
 
@@ -52,7 +53,6 @@ namespace renderer {
 		day_main.appendChild(renderer.domElement);
 		// test
 
-		controls = new day_controls;
 
 		window.addEventListener( 'resize', onWindowResize );
 
@@ -112,6 +112,7 @@ namespace renderer {
 						for (let material of object.material)
 							fix(material);
 				}
+				props.factory(object);
 			}
 
 			myScene.traverse(traversal);
@@ -127,9 +128,6 @@ namespace renderer {
 
 	export function render() {
 		delta = clock.getDelta();
-
-		//controls.update(delta);
-		controls.loop(delta);
 
 		cube.rotation.x += 0.01;
 		cube.rotation.y += 0.01;

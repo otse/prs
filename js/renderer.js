@@ -1,4 +1,4 @@
-import day_controls from "./controls.js";
+import props from "./props.js";
 var renderer;
 (function (renderer_1) {
     // set up three.js here
@@ -35,7 +35,6 @@ var renderer;
         const day_main = document.querySelector('day-main');
         day_main.appendChild(renderer_1.renderer.domElement);
         // test
-        renderer_1.controls = new day_controls;
         window.addEventListener('resize', onWindowResize);
         load_room();
     }
@@ -79,6 +78,7 @@ var renderer;
                         for (let material of object.material)
                             fix(material);
                 }
+                props.factory(object);
             }
             myScene.traverse(traversal);
             const group = new THREE.Group();
@@ -89,8 +89,6 @@ var renderer;
     }
     function render() {
         renderer_1.delta = renderer_1.clock.getDelta();
-        //controls.update(delta);
-        renderer_1.controls.loop(renderer_1.delta);
         cube.rotation.x += 0.01;
         cube.rotation.y += 0.01;
         renderer_1.renderer.setRenderTarget(null);
