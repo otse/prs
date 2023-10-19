@@ -59,12 +59,13 @@ class player {
 		physics.world.addContactMaterial(physics_mat);
 
 		// Create a sphere
-		const radius = 1.3;
+		const radius = 0.5;
 		var sphereShape = new CANNON.Sphere(radius);
 		var sphereBody = new CANNON.Body({ mass: 5, material: playerMaterial });
 		sphereBody.addShape(sphereShape);
 		sphereBody.position.set(0, 5, 0);
 		sphereBody.linearDamping = 0.999;
+		sphereBody.angularDamping = 0.999;
 		physics.world.addBody(sphereBody);
 		this.cannonBody = sphereBody;
 
@@ -149,6 +150,7 @@ class player {
 		this.velocity.z += this.inputVelocity.z;
 
 		this.plc.getObject().position.copy(this.cannonBody.position);
+		this.plc.getObject().position.add(new THREE.Vector3(0, 1, 0));
 	}
 }
 

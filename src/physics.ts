@@ -1,4 +1,6 @@
+import day from "./day.js";
 import props from "./props.js";
+import renderer from "./renderer.js";
 
 namespace physics {
 
@@ -6,23 +8,23 @@ namespace physics {
 		walls = [], balls = [], ballMeshes = [], boxes = [], boxMeshes = [];
 
 	export function boot() {
-		world = new CANNON.World()
+		world = new CANNON.World();
 
 		// Tweak contact properties.
 		// Contact stiffness - use to make softer/harder contacts
-		world.defaultContactMaterial.contactEquationStiffness = 1e9
+		world.defaultContactMaterial.contactEquationStiffness = 1e9;
 
 		// Stabilization time in number of timesteps
-		world.defaultContactMaterial.contactEquationRelaxation = 4
+		world.defaultContactMaterial.contactEquationRelaxation = 4;
 
-		const solver = new CANNON.GSSolver()
-		solver.iterations = 7
-		solver.tolerance = 0.1
-		world.solver = new CANNON.SplitSolver(solver)
+		const solver = new CANNON.GSSolver();
+		solver.iterations = 7;
+		solver.tolerance = 0.1;
+		world.solver = new CANNON.SplitSolver(solver);
 		// use this to test non-split solver
 		// world.solver = solver
 
-		world.gravity.set(0, -20, 0)
+		world.gravity.set(0, -20, 0);
 
 		// Create a slippery material (friction coefficient = 0.0)
 		groundMaterial = new CANNON.Material('physics');
@@ -52,8 +54,14 @@ namespace physics {
 		const dt = time - lastCallTime;
 		lastCallTime = time;
 
-		world.step(timeStep, dt);
+		for (let body of bodies)
+			body.loop();
 
+		for (let sbox of sboxes) {
+			sbox.loop();
+		}
+
+		world.step(timeStep, dt);
 
 		// Step the physics world
 		//world.step(timeStep);
@@ -64,10 +72,121 @@ namespace physics {
 	}
 
 	// a physic
-	export class physic {
+	var bodies: fbody[] = []
+
+	var sboxes: simple_box[] = []
+
+	export class simple_box {
+		boxBody
+		boxMesh
+		constructor() {
+			sboxes.push(this);
+
+			const material = new THREE.MeshLambertMaterial({ color: 'green' });
+			const halfExtents = new CANNON.Vec3(0.5, 0.5, 0.5);
+			const boxShape = new CANNON.Box(halfExtents);
+			const boxGeometry = new THREE.BoxGeometry(
+				halfExtents.x * 2, halfExtents.y * 2, halfExtents.z * 2);
+			this.boxBody = new CANNON.Body({ mass: 1.0 });
+			this.boxBody.addShape(boxShape);
+			this.boxMesh = new THREE.Mesh(boxGeometry, material);
+			this.boxMesh.add(new THREE.AxesHelper(1));
+
+			const x = 2;//(Math.random() - 0.5) * 1;
+			const y = 4;
+			const z = 1;//(Math.random() - 0.5) * 2;
+
+			this.boxBody.position.set(x, y, z);
+			this.boxMesh.position.copy(this.boxBody.position);
+			world.addBody(this.boxBody);
+			renderer.scene.add(this.boxMesh);
+		}
+		loop() {
+			this.boxMesh.position.copy(this.boxBody.position);
+			this.boxMesh.quaternion.copy(this.boxBody.quaternion);
+		}
+	}
+
+	export class fbody {
+		body
 		constructor(public readonly prop: props.prop) {
+			bodies.push(this);
+			prop.fbody = this;
+		}
+		loop() { // override
+		}
+	}
+
+	export class fbox extends fbody {
+		constructor(prop) {
+			super(prop);
+
+			const size = new THREE.Vector3();
+			let invert = new THREE.Matrix4().copy(this.prop.object.matrix);
+			//invert.invert();
+			this.prop.aabb.getSize(size);
+			//size.applyMatrix4(invert);
+			//size.divideScalar(day.inchMeter);
+			size.divideScalar(2);
+
+			const halfExtents = new CANNON.Vec3(size.x, size.y, size.z);
+			const boxShape = new CANNON.Box(halfExtents);
+			const mass = 0.1;
+			const boxBody = new CANNON.Body({ mass: mass });
+
+			const center = new THREE.Vector3();
+			this.prop.aabb.getCenter(center);
+			boxBody.position.copy(center);
+			boxBody.addShape(boxShape);
+			world.addBody(boxBody);
+			this.body = boxBody;
+			//console.log('set this body to boxbody', this.body);
+
+			this.add_helper_aabb();
 
 		}
+		boxBody
+		AABBMesh
+		add_helper_aabb() {
+			console.log('add helper aabb');
+
+			const size = new THREE.Vector3();
+			this.prop.aabb.getSize(size);
+			size.divideScalar(2);
+
+			const material = new THREE.MeshLambertMaterial({ color: 'red', wireframe: true });
+			const boxGeometry = new THREE.BoxGeometry(size.x * 2, size.y * 2, size.z * 2);
+			this.AABBMesh = new THREE.Mesh(boxGeometry, material);
+			//this.AABBMesh.add(new THREE.AxesHelper(1));
+
+			renderer.scene.add(this.AABBMesh);
+		}
+		flipper = 1;
+		redOrBlue = false;
+		override loop() {
+			if (this.AABBMesh) {
+				let hold_on = new THREE.Vector3().copy(this.prop.group.position);
+				//hold_on.applyMatrix4(this.prop.object.matrix);
+				//hold_on.divideScalar(day.inchMeter);
+				this.AABBMesh.position.copy(hold_on);
+				this.AABBMesh.quaternion.copy(this.prop.group.quaternion);
+				if ((this.flipper -= day.dt) <= 0) {
+					if (this.redOrBlue) {
+						this.AABBMesh.material.color = new THREE.Color('red');
+					}
+					else {
+						this.AABBMesh.material.color = new THREE.Color('blue');
+					}
+					this.redOrBlue = !this.redOrBlue;
+					this.flipper = 1;
+				}
+			}
+			//const center = new THREE.Vector3();
+			//this.prop.aabb.getCenter(center);
+			//center.divideScalar(100);
+			//this.body.position.set(center.x, center.y, center.z);
+		}
+
 	}
 }
 

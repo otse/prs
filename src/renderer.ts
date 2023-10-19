@@ -5,9 +5,11 @@ import props from "./props.js";
 namespace renderer {
 	// set up three.js here
 
-	export var scene, camera, renderer, ambient_light, clock, delta;
+	export var scene, camera, renderer, ambient_light, clock;
 
-	var cube;
+	export var delta = 0;
+
+	export var propsGroup;
 
 	export function boot() {
 
@@ -15,15 +17,26 @@ namespace renderer {
 
 		clock = new THREE.Clock();
 
+		propsGroup = new THREE.Group();
+		//propsGroup.matrix = propsGroup.matrix.makeScale(2, 2, 2);
+		//propsGroup.scale.set(2, 1, 1);
+		//propsGroup.matrix.makeTranslation(new THREE.Vector3(1000, 0, 0));
+		propsGroup.updateMatrix();
+		propsGroup.updateMatrixWorld();
+
+		const material = new THREE.MeshLambertMaterial({ color: 'red' });
+		const geometry = new THREE.RingGeometry(0.5, 1, 8);
+		const mesh = new THREE.Mesh(geometry, material);
+		mesh.add(new THREE.AxesHelper(1));
+		propsGroup.add(mesh);
+
+		//propsGroup.scale
+
 		scene = new THREE.Scene();
+		scene.add(propsGroup);
 		scene.background = new THREE.Color('white');
 
 		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-		const geometry = new THREE.BoxGeometry(1, 1, 1);
-		const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-		cube = new THREE.Mesh(geometry, material);
-		//scene.add(cube);
 
 		const helper = new THREE.AxesHelper(1);
 		scene.add(helper);
@@ -55,14 +68,14 @@ namespace renderer {
 		// test
 
 
-		window.addEventListener( 'resize', onWindowResize );
+		window.addEventListener('resize', onWindowResize);
 
 		load_room();
 	}
 
 	function onWindowResize() {
 
-		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.setSize(window.innerWidth, window.innerHeight);
 
 		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
@@ -85,6 +98,9 @@ namespace renderer {
 		loader.load('./assets/first_apartment_bad.dae', function (collada) {
 
 			const myScene = collada.scene;
+			myScene.updateMatrixWorld();
+
+			console.log('myscene', myScene.scale);
 
 			function fix_sticker(material) {
 				material.transparent = true;
@@ -103,6 +119,7 @@ namespace renderer {
 				}
 			}
 
+			const propss: props.prop[] = [];
 			function traversal(object) {
 				object.castShadow = true;
 				object.receiveShadow = true;
@@ -113,10 +130,19 @@ namespace renderer {
 						for (let material of object.material)
 							fix(material);
 				}
-				props.factory(object);
+				const prop = props.factory(object);
+				if (prop) {
+					prop.master = myScene;
+					propss.push(prop);
+				}
+				//return true;
 			}
 
 			myScene.traverse(traversal);
+
+			for (let prop of propss) {
+				prop.complete();
+			}
 
 			const group = new THREE.Group();
 			//group.rotation.set(0, -Math.PI / 2, 0);
@@ -133,20 +159,17 @@ namespace renderer {
 	export function render() {
 		delta = clock.getDelta();
 
-		frames ++;
-		time = ( performance || Date ).now();
+		frames++;
+		time = (performance || Date).now();
 
-		if ( time >= prevTime + 1000 ) {
+		if (time >= prevTime + 1000) {
 
-			fps = ( frames * 1000 ) / ( time - prevTime );
+			fps = (frames * 1000) / (time - prevTime);
 
 			prevTime = time;
 			frames = 0;
 			app.fluke_set_innerhtml('day-stats', `fps: ${fps}`);
 		}
-
-		cube.rotation.x += 0.01;
-		cube.rotation.y += 0.01;
 
 		renderer.setRenderTarget(null);
 		renderer.clear();

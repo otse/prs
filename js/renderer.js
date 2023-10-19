@@ -3,17 +3,26 @@ import props from "./props.js";
 var renderer;
 (function (renderer_1) {
     // set up three.js here
-    var cube;
+    renderer_1.delta = 0;
     function boot() {
         console.log('renderer boot');
         renderer_1.clock = new THREE.Clock();
+        renderer_1.propsGroup = new THREE.Group();
+        //propsGroup.matrix = propsGroup.matrix.makeScale(2, 2, 2);
+        //propsGroup.scale.set(2, 1, 1);
+        //propsGroup.matrix.makeTranslation(new THREE.Vector3(1000, 0, 0));
+        renderer_1.propsGroup.updateMatrix();
+        renderer_1.propsGroup.updateMatrixWorld();
+        const material = new THREE.MeshLambertMaterial({ color: 'red' });
+        const geometry = new THREE.RingGeometry(0.5, 1, 8);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.add(new THREE.AxesHelper(1));
+        renderer_1.propsGroup.add(mesh);
+        //propsGroup.scale
         renderer_1.scene = new THREE.Scene();
+        renderer_1.scene.add(renderer_1.propsGroup);
         renderer_1.scene.background = new THREE.Color('white');
         renderer_1.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        cube = new THREE.Mesh(geometry, material);
-        //scene.add(cube);
         const helper = new THREE.AxesHelper(1);
         renderer_1.scene.add(helper);
         renderer_1.camera.position.z = 5;
@@ -54,6 +63,8 @@ var renderer;
         const loader = new collada_loader(loadingManager);
         loader.load('./assets/first_apartment_bad.dae', function (collada) {
             const myScene = collada.scene;
+            myScene.updateMatrixWorld();
+            console.log('myscene', myScene.scale);
             function fix_sticker(material) {
                 material.transparent = true;
                 material.polygonOffset = true;
@@ -69,6 +80,7 @@ var renderer;
                     material.map.anisotropy = renderer_1.renderer.capabilities.getMaxAnisotropy();
                 }
             }
+            const propss = [];
             function traversal(object) {
                 object.castShadow = true;
                 object.receiveShadow = true;
@@ -79,9 +91,17 @@ var renderer;
                         for (let material of object.material)
                             fix(material);
                 }
-                props.factory(object);
+                const prop = props.factory(object);
+                if (prop) {
+                    prop.master = myScene;
+                    propss.push(prop);
+                }
+                //return true;
             }
             myScene.traverse(traversal);
+            for (let prop of propss) {
+                prop.complete();
+            }
             const group = new THREE.Group();
             //group.rotation.set(0, -Math.PI / 2, 0);
             group.add(myScene);
@@ -100,8 +120,6 @@ var renderer;
             frames = 0;
             app.fluke_set_innerhtml('day-stats', `fps: ${renderer_1.fps}`);
         }
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
         renderer_1.renderer.setRenderTarget(null);
         renderer_1.renderer.clear();
         renderer_1.renderer.render(renderer_1.scene, renderer_1.camera);
