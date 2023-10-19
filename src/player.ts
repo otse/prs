@@ -51,7 +51,7 @@ class player {
 		// Create a slippery material (friction coefficient = 0.0)
 		var playerMaterial = new CANNON.Material('physics');
 		const physics_mat = new CANNON.ContactMaterial(playerMaterial, playerMaterial, {
-			friction: 200.0,
+			friction: 0.1,
 			restitution: 0.01,
 		});
 
@@ -59,7 +59,7 @@ class player {
 		physics.world.addContactMaterial(physics_mat);
 
 		// Create a sphere
-		const radius = 0.5;
+		const radius = 0.4;
 		var sphereShape = new CANNON.Sphere(radius);
 		var sphereBody = new CANNON.Body({ mass: 5, material: playerMaterial });
 		sphereBody.addShape(sphereShape);

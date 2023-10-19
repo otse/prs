@@ -7,8 +7,8 @@ import viewport from "./viewport.js";
 var day;
 (function (day) {
     day.inch = 0.0254;
-    day.inchMeter = 1 / 0.0254;
-    day.timeStep = 1 / 60;
+    day.inchMeter = (1 / 0.0254);
+    day.timeStep = (1 / 60);
     day.dt = 0;
     function boot() {
         console.log('day setting up');

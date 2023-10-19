@@ -4,6 +4,8 @@ import renderer from "./renderer.js";
 
 namespace physics {
 
+	export const debug_wireframe = true;
+
 	export var world, groundMaterial,
 		walls = [], balls = [], ballMeshes = [], boxes = [], boxMeshes = [];
 
@@ -27,10 +29,10 @@ namespace physics {
 		world.gravity.set(0, -20, 0);
 
 		// Create a slippery material (friction coefficient = 0.0)
-		groundMaterial = new CANNON.Material('physics');
+		groundMaterial = new CANNON.Material('ground');
 		const groundContactMaterial = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
-			friction: 10.0,
-			restitution: 0.01,
+			friction: 0.0,
+			restitution: 0.3,
 		});
 
 		// We must add the contact materials to the world
@@ -38,7 +40,7 @@ namespace physics {
 
 		// Create the ground plane
 		const groundShape = new CANNON.Plane();
-		const groundBody = new CANNON.Body({ mass: 0, material: groundContactMaterial });
+		const groundBody = new CANNON.Body({ mass: 0, material: groundMaterial });
 		groundBody.addShape(groundShape);
 		groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 		world.addBody(groundBody);
@@ -72,6 +74,7 @@ namespace physics {
 	}
 
 	// a physic
+	const boo = 0;
 	var bodies: fbody[] = []
 
 	var sboxes: simple_box[] = []
@@ -87,7 +90,7 @@ namespace physics {
 			const boxShape = new CANNON.Box(halfExtents);
 			const boxGeometry = new THREE.BoxGeometry(
 				halfExtents.x * 2, halfExtents.y * 2, halfExtents.z * 2);
-			this.boxBody = new CANNON.Body({ mass: 1.0 });
+			this.boxBody = new CANNON.Body({ mass: 1.0, material: groundMaterial });
 			this.boxBody.addShape(boxShape);
 			this.boxMesh = new THREE.Mesh(boxGeometry, material);
 			this.boxMesh.add(new THREE.AxesHelper(1));
@@ -131,8 +134,8 @@ namespace physics {
 
 			const halfExtents = new CANNON.Vec3(size.x, size.y, size.z);
 			const boxShape = new CANNON.Box(halfExtents);
-			const mass = 0.1;
-			const boxBody = new CANNON.Body({ mass: mass });
+			const mass = this.prop.parameters.mass != undefined ? this.prop.parameters.mass : 0.1;
+			const boxBody = new CANNON.Body({ mass: mass, material: groundMaterial });
 
 			const center = new THREE.Vector3();
 			this.prop.aabb.getCenter(center);
@@ -142,13 +145,16 @@ namespace physics {
 			this.body = boxBody;
 			//console.log('set this body to boxbody', this.body);
 
-			this.add_helper_aabb();
+			if (!this.prop.parameters.solid)
+				this.add_helper_aabb();
 
 		}
 		boxBody
 		AABBMesh
 		add_helper_aabb() {
-			console.log('add helper aabb');
+			if (!debug_wireframe)
+				return;
+			//console.log('add helper aabb');
 
 			const size = new THREE.Vector3();
 			this.prop.aabb.getSize(size);

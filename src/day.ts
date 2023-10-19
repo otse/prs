@@ -8,8 +8,8 @@ import viewport from "./viewport.js";
 
 namespace day {
 	export const inch = 0.0254;
-	export const inchMeter = 1 / 0.0254;
-	export const timeStep = 1 / 60;
+	export const inchMeter = (1 / 0.0254);
+	export const timeStep = (1 / 60);
 	export var day_main;
 	export var dt = 0;
 
