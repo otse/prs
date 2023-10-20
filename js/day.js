@@ -21,7 +21,7 @@ var day;
         props.boot();
         renderer.boot();
         day.gplayer = new player();
-        new physics.simple_box();
+        // new physics.simple_box();
     }
     day.boot = boot;
     function loop(delta) {

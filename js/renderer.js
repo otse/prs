@@ -1,6 +1,7 @@
 import glob from "./glob.js";
 import app from "./app.js";
 import sketchup from "./sketchup.js";
+import easings from "./easings.js";
 const fragmentPost = `
 varying vec2 vUv;
 uniform float glitch; 
@@ -28,7 +29,8 @@ void main() {
 }`;
 const vertexScreen = `
 varying vec2 vUv;
-uniform float glitch; 
+uniform float glitch;
+uniform float bounce;
 void main() {
 	vUv = uv;
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
@@ -39,7 +41,7 @@ var renderer;
     renderer.delta = 0;
     // i like the sketchup palette a lot,
     // no need for color reduce
-    renderer.postToggle = false;
+    renderer.postToggle = true;
     function boot() {
         window['renderer'] = renderer;
         console.log('renderer boot');
@@ -67,6 +69,7 @@ var renderer;
             uniforms: {
                 tDiffuse: { value: renderer.target.texture },
                 glitch: { value: 0.0 },
+                bounce: { value: 0.0 },
                 compression: { value: 1 }
             },
             vertexShader: vertexScreen,
@@ -78,6 +81,8 @@ var renderer;
         renderer.quad = new THREE.Mesh(renderer.plane, renderer.post);
         renderer.quad.matrixAutoUpdate = false;
         renderer.scene2.add(renderer.quad);
+        renderer.glitch = 0;
+        renderer.bounce = 0;
         redo();
         renderer.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const helper = new THREE.AxesHelper(1);
@@ -141,10 +146,25 @@ var renderer;
             frames = 0;
             app.fluke_set_innerhtml('day-stats', `fps: ${renderer.fps}`);
         }
-        renderer.glitch += renderer.delta;
-        if (renderer.glitch >= 10)
-            renderer.glitch -= 10;
+        renderer.glitch += renderer.delta / 2.0;
+        renderer.bounce += renderer.delta / 2.0;
+        if (renderer.glitch >= 1)
+            renderer.glitch -= 1;
+        if (renderer.bounce >= 1)
+            renderer.bounce -= 1;
+        let ease = easings.easeOutBounce(renderer.bounce);
         renderer.post.uniforms.glitch.value = renderer.glitch;
+        renderer.post.uniforms.bounce.value = ease;
+        let position = renderer.plane.getAttribute('position');
+        renderer.plane.getAttribute('position').needsUpdate = true;
+        renderer.plane.needsUpdate = true;
+        //console.log(position);
+        position.array[0] = window.innerWidth - 1000;
+        position.array[1] = window.innerWidth - 1000;
+        position.array[2] = window.innerWidth - 1000;
+        position.needsUpdate = true;
+        //camera.zoom = 0.5 + ease / 2;
+        renderer.camera.updateProjectionMatrix();
         //console.log('clock', clock.getElapsedTime());
         if (renderer.postToggle) {
             renderer.renderer_.shadowMap.enabled = true;

@@ -13,7 +13,7 @@ namespace day {
 	export const inch = 0.0254;
 	export const inchMeter = (1 / 0.0254);
 	export const timeStep = (1 / 60);
-	
+
 	export var day_main;
 	export var dt = 0;
 
@@ -35,7 +35,7 @@ namespace day {
 
 		gplayer = new player();
 
-		new physics.simple_box();
+		// new physics.simple_box();
 
 	}
 

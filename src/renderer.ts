@@ -3,6 +3,7 @@ import app from "./app.js";
 import player from "./player.js";
 import props from "./props.js";
 import sketchup from "./sketchup.js";
+import easings from "./easings.js";
 
 const fragmentPost = `
 varying vec2 vUv;
@@ -33,7 +34,8 @@ void main() {
 
 const vertexScreen = `
 varying vec2 vUv;
-uniform float glitch; 
+uniform float glitch;
+uniform float bounce;
 void main() {
 	vUv = uv;
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
@@ -48,16 +50,16 @@ namespace renderer {
 
 	export var propsGroup;
 
-	export var scene2, camera2, target, post, quad, plane, glitch
-	
+	export var scene2, camera2, target, post, quad, plane, glitch, bounce
+
 	// i like the sketchup palette a lot,
 	// no need for color reduce
-	export var postToggle = false;
+	export var postToggle = true;
 
 
 	export function boot() {
 		window['renderer'] = renderer;
-		
+
 		console.log('renderer boot');
 
 		THREE.ColorManagement.enabled = true;
@@ -91,6 +93,7 @@ namespace renderer {
 			uniforms: {
 				tDiffuse: { value: target.texture },
 				glitch: { value: 0.0 },
+				bounce: { value: 0.0 },
 				compression: { value: 1 }
 			},
 			vertexShader: vertexScreen,
@@ -102,6 +105,9 @@ namespace renderer {
 		quad = new THREE.Mesh(plane, post);
 		quad.matrixAutoUpdate = false;
 		scene2.add(quad);
+
+		glitch = 0;
+		bounce = 0;
 
 		redo();
 
@@ -165,7 +171,7 @@ namespace renderer {
 
 		render();
 	}
-	
+
 	var prevTime = 0, time = 0, frames = 0
 	export var fps = 0;
 
@@ -192,12 +198,31 @@ namespace renderer {
 			app.fluke_set_innerhtml('day-stats', `fps: ${fps}`);
 		}
 
-		glitch += delta;
+		glitch += delta / 2.0;
+		bounce += delta / 2.0;
 
-		if (glitch >= 10)
-			glitch -= 10;
+		if (glitch >= 1)
+			glitch -= 1;
 
-		post.uniforms.glitch.value = glitch;		
+		if (bounce >= 1)
+			bounce -= 1;
+
+		let ease = easings.easeOutBounce(bounce);
+		post.uniforms.glitch.value = glitch;
+		post.uniforms.bounce.value = ease;
+		
+		let position = plane.getAttribute('position');
+		plane.getAttribute('position').needsUpdate = true;
+		plane.needsUpdate = true;
+		//console.log(position);
+		
+		position.array[0] = window.innerWidth - 1000;
+		position.array[1] = window.innerWidth - 1000;
+		position.array[2] = window.innerWidth - 1000;
+		position.needsUpdate = true;
+
+		//camera.zoom = 0.5 + ease / 2;
+		camera.updateProjectionMatrix();
 
 		//console.log('clock', clock.getElapsedTime());
 

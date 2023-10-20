@@ -11,6 +11,10 @@ namespace props {
 			case 'solid':
 				prop = new pbox(object, { mass: 0 });
 				break;
+			case 'door':
+				console.log('making a door');
+				prop = new pdoor(object, { mass: 0 });
+				break;
 			case 'fridge':
 				prop = new pbox(object, { mass: 3 });
 				break;
@@ -117,6 +121,20 @@ namespace props {
 			if (this.object.name == 'wall')
 				this.object.visible = false;
 
+		}
+		override loop() {
+			this.group.position.copy(this.fbody.body.position);
+			this.group.quaternion.copy(this.fbody.body.quaternion);
+			this.fbody.loop();
+		}
+	}
+
+	export class pdoor extends prop {
+		constructor(object, parameters: iparameters) {
+			super(object, parameters);
+		}
+		override setup() {
+			new physics.fdoor(this);
 		}
 		override loop() {
 			this.group.position.copy(this.fbody.body.position);

@@ -10,6 +10,10 @@ var props;
             case 'solid':
                 prop = new pbox(object, { mass: 0 });
                 break;
+            case 'door':
+                console.log('making a door');
+                prop = new pdoor(object, { mass: 0 });
+                break;
             case 'fridge':
                 prop = new pbox(object, { mass: 3 });
                 break;
@@ -108,5 +112,19 @@ var props;
         }
     }
     props_1.pbox = pbox;
+    class pdoor extends prop {
+        constructor(object, parameters) {
+            super(object, parameters);
+        }
+        setup() {
+            new physics.fdoor(this);
+        }
+        loop() {
+            this.group.position.copy(this.fbody.body.position);
+            this.group.quaternion.copy(this.fbody.body.quaternion);
+            this.fbody.loop();
+        }
+    }
+    props_1.pdoor = pdoor;
 })(props || (props = {}));
 export default props;

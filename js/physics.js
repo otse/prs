@@ -2,16 +2,17 @@ import day from "./day.js";
 import renderer from "./renderer.js";
 var physics;
 (function (physics) {
-    physics.showWireframe = false;
+    physics.showWireframe = true;
     physics.materials = {};
     physics.walls = [], physics.balls = [], physics.ballMeshes = [], physics.boxes = [], physics.boxMeshes = [];
     function boot() {
         physics.world = new CANNON.World();
+        physics.world.solver.iterations = 50;
         // Tweak contact properties.
         // Contact stiffness - use to make softer/harder contacts
-        physics.world.defaultContactMaterial.contactEquationStiffness = 1e9;
+        physics.world.defaultContactMaterial.contactEquationStiffness = 5e6;
         // Stabilization time in number of timesteps
-        physics.world.defaultContactMaterial.contactEquationRelaxation = 4;
+        physics.world.defaultContactMaterial.contactEquationRelaxation = 3;
         const solver = new CANNON.GSSolver();
         solver.iterations = 7;
         solver.tolerance = 0.1;
@@ -149,7 +150,6 @@ var physics;
             //if (!this.prop.parameters.solid)
             this.add_helper_aabb();
         }
-        boxBody;
         AABBMesh;
         add_helper_aabb() {
             if (!physics.showWireframe)
@@ -184,5 +184,54 @@ var physics;
         }
     }
     physics.fbox = fbox;
+    class fdoor extends fbody {
+        constructor(prop) {
+            super(prop);
+            const size = new THREE.Vector3();
+            const center = new THREE.Vector3();
+            this.prop.aabb.getSize(size);
+            this.prop.aabb.getCenter(center);
+            size.multiplyScalar(0.99);
+            const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
+            const hingedShape = new CANNON.Box(halfExtents);
+            const hingedBody = new CANNON.Body({ mass: 0.5 });
+            hingedBody.addShape(hingedShape);
+            hingedBody.position.copy(center);
+            //hingedBody.position.z += size.z;
+            physics.world.addBody(hingedBody);
+            const halfExtents2 = new CANNON.Vec3(0.2, size.y / 2, 0.2);
+            const staticShape = new CANNON.Box(halfExtents2);
+            const staticBody = new CANNON.Body({ mass: 0 });
+            staticBody.addShape(staticShape);
+            staticBody.position.copy(center);
+            staticBody.position.z += size.z;
+            physics.world.addBody(staticBody);
+            const constraint = new CANNON.HingeConstraint(staticBody, hingedBody, {
+                pivotA: new CANNON.Vec3(0, 0, -size.z / 2),
+                axisA: new CANNON.Vec3(0, 1, 0),
+                pivotB: new CANNON.Vec3(0, 0, -size.z / 2),
+                axisB: new CANNON.Vec3(0, 1, 0),
+            });
+            physics.world.addConstraint(constraint);
+            this.body = hingedBody;
+            this.add_helper_aabb();
+        }
+        AABBMesh;
+        add_helper_aabb() {
+            if (!physics.showWireframe)
+                return;
+            const size = new THREE.Vector3();
+            this.prop.aabb.getSize(size);
+            const material = new THREE.MeshLambertMaterial({ color: 'red', wireframe: true });
+            const boxGeometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+            this.AABBMesh = new THREE.Mesh(boxGeometry, material);
+            renderer.scene.add(this.AABBMesh);
+        }
+        loop() {
+            this.AABBMesh.position.copy(this.prop.group.position);
+            this.AABBMesh.quaternion.copy(this.prop.group.quaternion);
+        }
+    }
+    physics.fdoor = fdoor;
 })(physics || (physics = {}));
 export default physics;
