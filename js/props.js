@@ -118,6 +118,8 @@ var props;
         }
         setup() {
             new physics.fdoor(this);
+            this.object.add(new THREE.AxesHelper(20));
+            this.group.add(new THREE.AxesHelper(20));
         }
         loop() {
             this.group.position.copy(this.fbody.body.position);
