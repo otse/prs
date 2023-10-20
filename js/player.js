@@ -35,21 +35,13 @@ class player {
         renderer.scene.add(this.plc.getObject());
     }
     createPhysics() {
-        // Create a slippery material (friction coefficient = 0.0)
-        var playerMaterial = new CANNON.Material('physics');
-        const physics_mat = new CANNON.ContactMaterial(playerMaterial, playerMaterial, {
-            friction: 0.1,
-            restitution: 0.01,
-        });
-        // We must add the contact materials to the world
-        physics.world.addContactMaterial(physics_mat);
         // Create a sphere
         const radius = 0.4;
         var sphereShape = new CANNON.Sphere(radius);
-        var sphereBody = new CANNON.Body({ mass: 5, material: playerMaterial });
+        var sphereBody = new CANNON.Body({ mass: 1, material: physics.materials.player });
         sphereBody.addShape(sphereShape);
-        sphereBody.position.set(0, 5, 0);
-        sphereBody.linearDamping = 0.999;
+        sphereBody.position.set(0, 10, 0);
+        sphereBody.linearDamping = 0.95;
         sphereBody.angularDamping = 0.999;
         physics.world.addBody(sphereBody);
         this.cannonBody = sphereBody;
@@ -75,14 +67,9 @@ class player {
         });
         this.bodyVelocity = this.cannonBody.velocity;
     }
-    force = 20.0;
+    force = 12.0;
     bodyVelocity;
     loop(delta) {
-        let yaw = new THREE.Group();
-        let pitch = new THREE.Group();
-        //pitch.rotation.x = x;
-        //yaw.rotation.z = z;
-        yaw.add(pitch);
         if (this.plc.enabled === false)
             return;
         let inputVelocity = new THREE.Vector3();

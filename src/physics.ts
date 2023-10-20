@@ -4,9 +4,11 @@ import renderer from "./renderer.js";
 
 namespace physics {
 
-	export const showWireframe = false;
+	export const showWireframe = true;
 
-	export var world, groundMaterial, objectMaterial,
+	export var materials: any = {}
+
+	export var world,
 		walls = [], balls = [], ballMeshes = [], boxes = [], boxMeshes = [];
 
 	export function boot() {
@@ -29,26 +31,39 @@ namespace physics {
 		world.gravity.set(0, -20, 0);
 
 		// Create a slippery material (friction coefficient = 0.0)
-		groundMaterial = new CANNON.Material('ground');
-		const groundContactMaterial = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
-			friction: 0.1,
-			restitution: 0.3,
-		});
+		materials.player = new CANNON.Material('player');
+		materials.ground = new CANNON.Material('ground');
+		materials.solid = new CANNON.Material('solid');
+		materials.wall = new CANNON.Material('wall');
 
 		// Object
-		objectMaterial = new CANNON.Material('object');
-		const objectToGroundContactMaterial = new CANNON.ContactMaterial(objectMaterial, groundMaterial, {
+		materials.generic = new CANNON.Material('object');
+		const objectToGroundContactMaterial = new CANNON.ContactMaterial(
+			materials.generic, materials.ground, {
 			friction: 0.0001,
 			restitution: 0.3,
 		});
 
+		const playerToWallContactMaterial = new CANNON.ContactMaterial(
+			materials.player, materials.wall, {
+			friction: 1.0,
+			restitution: 0.0,
+		});
+
+		const playerToGroundContactMaterial = new CANNON.ContactMaterial(
+			materials.player, materials.ground, {
+			friction: 0.002,
+			restitution: 0.3,
+		});
+
 		// We must add the contact materials to the world
-		world.addContactMaterial(groundContactMaterial);
 		world.addContactMaterial(objectToGroundContactMaterial);
+		world.addContactMaterial(playerToWallContactMaterial);
+		world.addContactMaterial(playerToGroundContactMaterial);
 
 		// Create the ground plane
 		const groundShape = new CANNON.Plane();
-		const groundBody = new CANNON.Body({ mass: 0, material: groundMaterial });
+		const groundBody = new CANNON.Body({ mass: 0, material: materials.ground });
 		groundBody.addShape(groundShape);
 		groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 		world.addBody(groundBody);
@@ -98,7 +113,7 @@ namespace physics {
 			const boxShape = new CANNON.Box(halfExtents);
 			const boxGeometry = new THREE.BoxGeometry(
 				halfExtents.x * 2, halfExtents.y * 2, halfExtents.z * 2);
-			this.boxBody = new CANNON.Body({ mass: 1.0, material: groundMaterial });
+			this.boxBody = new CANNON.Body({ mass: 1.0, material: materials.generic });
 			this.boxBody.addShape(boxShape);
 			this.boxMesh = new THREE.Mesh(boxGeometry, material);
 			this.boxMesh.add(new THREE.AxesHelper(1));
@@ -133,21 +148,28 @@ namespace physics {
 			super(prop);
 
 			const size = new THREE.Vector3();
-			let invert = new THREE.Matrix4().copy(this.prop.object.matrix);
-			//invert.invert();
 			this.prop.aabb.getSize(size);
-			//size.applyMatrix4(invert);
-			//size.divideScalar(day.inchMeter);
 			size.divideScalar(2);
 
 			const halfExtents = new CANNON.Vec3(size.x, size.y, size.z);
 			const boxShape = new CANNON.Box(halfExtents);
 			const mass = this.prop.parameters.mass != undefined ? this.prop.parameters.mass : 0.1;
-			const boxBody = new CANNON.Body({ mass: mass, material: objectMaterial });
+			let material;
+			switch(prop.object.name) {
+				case 'wall':					
+					material = materials.wall;
+				default:
+					material = materials.generic;
+			}
+			const boxBody = new CANNON.Body({ mass: mass, material: material });
 
 			const center = new THREE.Vector3();
 			this.prop.aabb.getCenter(center);
 			boxBody.position.copy(center);
+			console.log(boxBody.quaternion);
+			//new THREE.Quaternion().
+
+			//boxBody.rotation.copy(this.prop.oldRotation);
 			boxBody.addShape(boxShape);
 			world.addBody(boxBody);
 			this.body = boxBody;

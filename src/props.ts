@@ -5,20 +5,27 @@ import renderer from "./renderer.js";
 namespace props {
 
 	export function factory(object: any) {
-		return (() => {
-			switch (object.name) {
-				case 'wall':
-				case 'solid':
-					console.log('solid');
-					let solid = new pbox(object, { mass: 0, solid: true });
-					return solid;
-				case 'fridge':
-					console.log('we found your fridge alright');
-					let fridge = new pbox(object, { mass: 1 });
-					return fridge;
-				default:
-			}
-		})()
+		let prop;
+		switch (object.name) {
+			case 'wall':
+			case 'solid':
+				prop = new pbox(object, { mass: 0 });
+				break;
+			case 'fridge':
+				prop = new pbox(object, { mass: 3 });
+				break;
+			case 'cup':
+				prop = new pbox(object, { mass: 0.2 });
+				break;
+			case 'compactdiscs':
+				prop = new pbox(object, { mass: 0.7 });
+				break;
+			case 'matress':
+				prop = new pbox(object, { mass: 2.0 });
+				break;
+			default:
+		}
+		return prop;
 	}
 
 	export function boot() {
@@ -40,6 +47,8 @@ namespace props {
 			prop.group.quaternion,
 			prop.group.scale);
 
+		console.log('take collada prop', prop.object.name, prop.object.quaternion);
+
 		prop.object.position.set(0, 0, 0);
 		prop.object.rotation.set(0, 0, 0);
 
@@ -49,20 +58,21 @@ namespace props {
 
 		renderer.propsGroup.add(prop.group);
 
-		/*function traversal(object) {
+		function traversal(object) {
 			object.geometry?.computeBoundingBox();
 		}
-		prop.object.traverse(traversal);*/
+		prop.object.traverse(traversal);
 	}
 
 	export var props: prop[] = []
 
 	interface iparameters {
 		mass: number;
-		solid?: boolean;
+		wall?: boolean;
 	};
 
 	export class prop {
+		oldRotation
 		group
 		master
 		fbody: physics.fbody
@@ -104,7 +114,7 @@ namespace props {
 		}
 		override setup() {
 			new physics.fbox(this);
-			if (this.parameters.solid)
+			if (this.object.name == 'wall')
 				this.object.visible = false;
 
 		}

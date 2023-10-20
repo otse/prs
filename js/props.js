@@ -4,20 +4,27 @@ import renderer from "./renderer.js";
 var props;
 (function (props_1) {
     function factory(object) {
-        return (() => {
-            switch (object.name) {
-                case 'wall':
-                case 'solid':
-                    console.log('solid');
-                    let solid = new pbox(object, { mass: 0, solid: true });
-                    return solid;
-                case 'fridge':
-                    console.log('we found your fridge alright');
-                    let fridge = new pbox(object, { mass: 1 });
-                    return fridge;
-                default:
-            }
-        })();
+        let prop;
+        switch (object.name) {
+            case 'wall':
+            case 'solid':
+                prop = new pbox(object, { mass: 0 });
+                break;
+            case 'fridge':
+                prop = new pbox(object, { mass: 3 });
+                break;
+            case 'cup':
+                prop = new pbox(object, { mass: 0.2 });
+                break;
+            case 'compactdiscs':
+                prop = new pbox(object, { mass: 0.7 });
+                break;
+            case 'matress':
+                prop = new pbox(object, { mass: 2.0 });
+                break;
+            default:
+        }
+        return prop;
     }
     props_1.factory = factory;
     function boot() {
@@ -33,16 +40,17 @@ var props;
         // set it apart
         prop.group = new THREE.Group();
         prop.object.matrixWorld.decompose(prop.group.position, prop.group.quaternion, prop.group.scale);
+        console.log('take collada prop', prop.object.name, prop.object.quaternion);
         prop.object.position.set(0, 0, 0);
         prop.object.rotation.set(0, 0, 0);
         prop.group.add(prop.object);
         prop.group.updateMatrix();
         prop.group.updateMatrixWorld();
         renderer.propsGroup.add(prop.group);
-        /*function traversal(object) {
+        function traversal(object) {
             object.geometry?.computeBoundingBox();
         }
-        prop.object.traverse(traversal);*/
+        prop.object.traverse(traversal);
     }
     props_1.take_collada_prop = take_collada_prop;
     props_1.props = [];
@@ -50,6 +58,7 @@ var props;
     class prop {
         object;
         parameters;
+        oldRotation;
         group;
         master;
         fbody;
@@ -89,7 +98,7 @@ var props;
         }
         setup() {
             new physics.fbox(this);
-            if (this.parameters.solid)
+            if (this.object.name == 'wall')
                 this.object.visible = false;
         }
         loop() {
