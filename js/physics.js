@@ -90,6 +90,8 @@ var physics;
             this.boxBody = new CANNON.Body({ mass: 1.0, material: physics.materials.generic });
             this.boxBody.addShape(boxShape);
             this.boxMesh = new THREE.Mesh(boxGeometry, material);
+            this.boxMesh.castShadow = true;
+            this.boxMesh.receiveShadow = true;
             this.boxMesh.add(new THREE.AxesHelper(1));
             const x = 2; //(Math.random() - 0.5) * 1;
             const y = 4;

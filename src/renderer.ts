@@ -2,14 +2,27 @@ import glob from "./glob.js";
 import app from "./app.js";
 import player from "./player.js";
 import props from "./props.js";
+import sketchup from "./sketchup.js";
 
 const fragmentPost = `
 varying vec2 vUv;
+uniform float glitch; 
 uniform int compression;
 uniform sampler2D tDiffuse;
-float factor = 4.0;
+float factor = 256.0;
+float saturation = 2.0;
+
 void main() {
 	vec4 diffuse = texture2D( tDiffuse, vUv );
+
+	factor -= glitch * 25.0;
+
+	factor = clamp(factor, 2.0, 256.0);
+
+	vec3 original = diffuse.rgb;
+	vec3 lumaWeights = vec3(.25,.50,.25);
+	vec3 grey = vec3(dot(lumaWeights, original));
+	diffuse = vec4(grey + saturation * (original - grey), 1.0);
 
 	diffuse = vec4(floor(diffuse.rgb * factor + 0.5) / factor, diffuse.a);
 
@@ -20,6 +33,7 @@ void main() {
 
 const vertexScreen = `
 varying vec2 vUv;
+uniform float glitch; 
 void main() {
 	vUv = uv;
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
@@ -34,9 +48,11 @@ namespace renderer {
 
 	export var propsGroup;
 
-	export var scene2, camera2, target, post, quad, plane
-
-	export var postToggle = true;
+	export var scene2, camera2, target, post, quad, plane, glitch
+	
+	// i like the sketchup palette a lot,
+	// no need for color reduce
+	export var postToggle = false;
 
 
 	export function boot() {
@@ -74,12 +90,14 @@ namespace renderer {
 		post = new THREE.ShaderMaterial({
 			uniforms: {
 				tDiffuse: { value: target.texture },
+				glitch: { value: 0.0 },
 				compression: { value: 1 }
 			},
 			vertexShader: vertexScreen,
 			fragmentShader: fragmentPost,
 			depthWrite: false
 		});
+		glitch = 0;
 		plane = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
 		quad = new THREE.Mesh(plane, post);
 		quad.matrixAutoUpdate = false;
@@ -124,7 +142,7 @@ namespace renderer {
 
 		window.addEventListener('resize', onWindowResize);
 
-		load_room();
+		sketchup.load_room();
 	}
 
 	function redo() {
@@ -146,73 +164,8 @@ namespace renderer {
 		camera.updateProjectionMatrix();
 
 		render();
-
 	}
-
-	function load_room() {
-		const loadingManager = new THREE.LoadingManager(function () {
-		});
-
-		const loader = new collada_loader(loadingManager);
-
-		loader.load('./assets/first_apartment_bad.dae', function (collada) {
-
-			const myScene = collada.scene;
-			myScene.updateMatrixWorld();
-
-			console.log('myscene', myScene.scale);
-
-			function fix_sticker(material) {
-				material.transparent = true;
-				material.polygonOffset = true;
-				material.polygonOffsetFactor = -4;
-			}
-
-			function fix(material) {
-				if (material.name.includes('sticker'))
-					fix_sticker(material);
-				if (material.map) {
-					// mineify
-					//THREE.NearestFilter
-					material.map.minFilter = material.map.magFilter = THREE.NearestFilter;
-					material.map.anisotropy = renderer_.capabilities.getMaxAnisotropy();
-				}
-			}
-
-			const propss: props.prop[] = [];
-			function traversal(object) {
-				object.castShadow = true;
-				object.receiveShadow = true;
-				if (object.material) {
-					if (!object.material.length)
-						fix(object.material);
-					else
-						for (let material of object.material)
-							fix(material);
-				}
-				const prop = props.factory(object);
-				if (prop) {
-					prop.master = myScene;
-					propss.push(prop);
-				}
-				//return true;
-			}
-
-			myScene.traverse(traversal);
-
-			for (let prop of propss) {
-				prop.complete();
-			}
-
-			const group = new THREE.Group();
-			//group.rotation.set(0, -Math.PI / 2, 0);
-			group.add(myScene);
-
-			scene.add(group);
-
-		});
-	}
-
+	
 	var prevTime = 0, time = 0, frames = 0
 	export var fps = 0;
 
@@ -238,6 +191,15 @@ namespace renderer {
 			frames = 0;
 			app.fluke_set_innerhtml('day-stats', `fps: ${fps}`);
 		}
+
+		glitch += delta;
+
+		if (glitch >= 10)
+			glitch -= 10;
+
+		post.uniforms.glitch.value = glitch;		
+
+		//console.log('clock', clock.getElapsedTime());
 
 		if (postToggle) {
 			renderer_.shadowMap.enabled = true;

@@ -1,13 +1,25 @@
 import glob from "./glob.js";
 import app from "./app.js";
-import props from "./props.js";
+import sketchup from "./sketchup.js";
 const fragmentPost = `
 varying vec2 vUv;
+uniform float glitch; 
 uniform int compression;
 uniform sampler2D tDiffuse;
-float factor = 4.0;
+float factor = 256.0;
+float saturation = 2.0;
+
 void main() {
 	vec4 diffuse = texture2D( tDiffuse, vUv );
+
+	factor -= glitch * 25.0;
+
+	factor = clamp(factor, 2.0, 256.0);
+
+	vec3 original = diffuse.rgb;
+	vec3 lumaWeights = vec3(.25,.50,.25);
+	vec3 grey = vec3(dot(lumaWeights, original));
+	diffuse = vec4(grey + saturation * (original - grey), 1.0);
 
 	diffuse = vec4(floor(diffuse.rgb * factor + 0.5) / factor, diffuse.a);
 
@@ -16,6 +28,7 @@ void main() {
 }`;
 const vertexScreen = `
 varying vec2 vUv;
+uniform float glitch; 
 void main() {
 	vUv = uv;
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
@@ -24,7 +37,9 @@ var renderer;
 (function (renderer) {
     // set up three.js here
     renderer.delta = 0;
-    renderer.postToggle = true;
+    // i like the sketchup palette a lot,
+    // no need for color reduce
+    renderer.postToggle = false;
     function boot() {
         window['renderer'] = renderer;
         console.log('renderer boot');
@@ -51,12 +66,14 @@ var renderer;
         renderer.post = new THREE.ShaderMaterial({
             uniforms: {
                 tDiffuse: { value: renderer.target.texture },
+                glitch: { value: 0.0 },
                 compression: { value: 1 }
             },
             vertexShader: vertexScreen,
             fragmentShader: fragmentPost,
             depthWrite: false
         });
+        renderer.glitch = 0;
         renderer.plane = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
         renderer.quad = new THREE.Mesh(renderer.plane, renderer.post);
         renderer.quad.matrixAutoUpdate = false;
@@ -89,7 +106,7 @@ var renderer;
         day_main.appendChild(renderer.renderer_.domElement);
         // test
         window.addEventListener('resize', onWindowResize);
-        load_room();
+        sketchup.load_room();
     }
     renderer.boot = boot;
     function redo() {
@@ -104,57 +121,6 @@ var renderer;
         renderer.camera.aspect = window.innerWidth / window.innerHeight;
         renderer.camera.updateProjectionMatrix();
         render();
-    }
-    function load_room() {
-        const loadingManager = new THREE.LoadingManager(function () {
-        });
-        const loader = new collada_loader(loadingManager);
-        loader.load('./assets/first_apartment_bad.dae', function (collada) {
-            const myScene = collada.scene;
-            myScene.updateMatrixWorld();
-            console.log('myscene', myScene.scale);
-            function fix_sticker(material) {
-                material.transparent = true;
-                material.polygonOffset = true;
-                material.polygonOffsetFactor = -4;
-            }
-            function fix(material) {
-                if (material.name.includes('sticker'))
-                    fix_sticker(material);
-                if (material.map) {
-                    // mineify
-                    //THREE.NearestFilter
-                    material.map.minFilter = material.map.magFilter = THREE.NearestFilter;
-                    material.map.anisotropy = renderer.renderer_.capabilities.getMaxAnisotropy();
-                }
-            }
-            const propss = [];
-            function traversal(object) {
-                object.castShadow = true;
-                object.receiveShadow = true;
-                if (object.material) {
-                    if (!object.material.length)
-                        fix(object.material);
-                    else
-                        for (let material of object.material)
-                            fix(material);
-                }
-                const prop = props.factory(object);
-                if (prop) {
-                    prop.master = myScene;
-                    propss.push(prop);
-                }
-                //return true;
-            }
-            myScene.traverse(traversal);
-            for (let prop of propss) {
-                prop.complete();
-            }
-            const group = new THREE.Group();
-            //group.rotation.set(0, -Math.PI / 2, 0);
-            group.add(myScene);
-            renderer.scene.add(group);
-        });
     }
     var prevTime = 0, time = 0, frames = 0;
     renderer.fps = 0;
@@ -175,6 +141,11 @@ var renderer;
             frames = 0;
             app.fluke_set_innerhtml('day-stats', `fps: ${renderer.fps}`);
         }
+        renderer.glitch += renderer.delta;
+        if (renderer.glitch >= 10)
+            renderer.glitch -= 10;
+        renderer.post.uniforms.glitch.value = renderer.glitch;
+        //console.log('clock', clock.getElapsedTime());
         if (renderer.postToggle) {
             renderer.renderer_.shadowMap.enabled = true;
             renderer.renderer_.setRenderTarget(renderer.target);
