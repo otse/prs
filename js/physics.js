@@ -2,7 +2,7 @@ import day from "./day.js";
 import renderer from "./renderer.js";
 var physics;
 (function (physics) {
-    physics.debug_wireframe = true;
+    physics.showWireframe = false;
     physics.walls = [], physics.balls = [], physics.ballMeshes = [], physics.boxes = [], physics.boxMeshes = [];
     function boot() {
         physics.world = new CANNON.World();
@@ -21,11 +21,18 @@ var physics;
         // Create a slippery material (friction coefficient = 0.0)
         physics.groundMaterial = new CANNON.Material('ground');
         const groundContactMaterial = new CANNON.ContactMaterial(physics.groundMaterial, physics.groundMaterial, {
-            friction: 0.0,
+            friction: 0.1,
+            restitution: 0.3,
+        });
+        // Object
+        physics.objectMaterial = new CANNON.Material('object');
+        const objectToGroundContactMaterial = new CANNON.ContactMaterial(physics.objectMaterial, physics.groundMaterial, {
+            friction: 0.0001,
             restitution: 0.3,
         });
         // We must add the contact materials to the world
         physics.world.addContactMaterial(groundContactMaterial);
+        physics.world.addContactMaterial(objectToGroundContactMaterial);
         // Create the ground plane
         const groundShape = new CANNON.Plane();
         const groundBody = new CANNON.Body({ mass: 0, material: physics.groundMaterial });
@@ -109,7 +116,7 @@ var physics;
             const halfExtents = new CANNON.Vec3(size.x, size.y, size.z);
             const boxShape = new CANNON.Box(halfExtents);
             const mass = this.prop.parameters.mass != undefined ? this.prop.parameters.mass : 0.1;
-            const boxBody = new CANNON.Body({ mass: mass, material: physics.groundMaterial });
+            const boxBody = new CANNON.Body({ mass: mass, material: physics.objectMaterial });
             const center = new THREE.Vector3();
             this.prop.aabb.getCenter(center);
             boxBody.position.copy(center);
@@ -117,13 +124,13 @@ var physics;
             physics.world.addBody(boxBody);
             this.body = boxBody;
             //console.log('set this body to boxbody', this.body);
-            if (!this.prop.parameters.solid)
-                this.add_helper_aabb();
+            //if (!this.prop.parameters.solid)
+            this.add_helper_aabb();
         }
         boxBody;
         AABBMesh;
         add_helper_aabb() {
-            if (!physics.debug_wireframe)
+            if (!physics.showWireframe)
                 return;
             //console.log('add helper aabb');
             const size = new THREE.Vector3();
@@ -138,27 +145,20 @@ var physics;
         flipper = 1;
         redOrBlue = false;
         loop() {
-            if (this.AABBMesh) {
-                let hold_on = new THREE.Vector3().copy(this.prop.group.position);
-                //hold_on.applyMatrix4(this.prop.object.matrix);
-                //hold_on.divideScalar(day.inchMeter);
-                this.AABBMesh.position.copy(hold_on);
-                this.AABBMesh.quaternion.copy(this.prop.group.quaternion);
-                if ((this.flipper -= day.dt) <= 0) {
-                    if (this.redOrBlue) {
-                        this.AABBMesh.material.color = new THREE.Color('red');
-                    }
-                    else {
-                        this.AABBMesh.material.color = new THREE.Color('blue');
-                    }
-                    this.redOrBlue = !this.redOrBlue;
-                    this.flipper = 1;
+            if (!this.AABBMesh)
+                return;
+            this.AABBMesh.position.copy(this.prop.group.position);
+            this.AABBMesh.quaternion.copy(this.prop.group.quaternion);
+            if ((this.flipper -= day.dt) <= 0) {
+                if (this.redOrBlue) {
+                    this.AABBMesh.material.color = new THREE.Color('red');
                 }
+                else {
+                    this.AABBMesh.material.color = new THREE.Color('blue');
+                }
+                this.redOrBlue = !this.redOrBlue;
+                this.flipper = 1;
             }
-            //const center = new THREE.Vector3();
-            //this.prop.aabb.getCenter(center);
-            //center.divideScalar(100);
-            //this.body.position.set(center.x, center.y, center.z);
         }
     }
     physics.fbox = fbox;

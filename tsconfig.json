@@ -19,7 +19,7 @@
 	],
 	"include": [
 		"./src"
-	],
+, "js/plc.js"	],
 	"exclude": [
 		"node_modules"
 	],

@@ -26,11 +26,11 @@
 	</script>
   
 	<script type="module">
-		import { default as backwards } from "./js/app.js";
 		import * as cannon from 'cannon';
 		import * as three from 'three';
 		import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 		import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+		import { default as backwards } from "./js/app.js";
 		app = backwards;
 		CANNON = cannon;
 		THREE = three;

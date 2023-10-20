@@ -4,9 +4,9 @@ import renderer from "./renderer.js";
 
 namespace physics {
 
-	export const debug_wireframe = true;
+	export const showWireframe = false;
 
-	export var world, groundMaterial,
+	export var world, groundMaterial, objectMaterial,
 		walls = [], balls = [], ballMeshes = [], boxes = [], boxMeshes = [];
 
 	export function boot() {
@@ -31,12 +31,20 @@ namespace physics {
 		// Create a slippery material (friction coefficient = 0.0)
 		groundMaterial = new CANNON.Material('ground');
 		const groundContactMaterial = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
-			friction: 0.0,
+			friction: 0.1,
+			restitution: 0.3,
+		});
+
+		// Object
+		objectMaterial = new CANNON.Material('object');
+		const objectToGroundContactMaterial = new CANNON.ContactMaterial(objectMaterial, groundMaterial, {
+			friction: 0.0001,
 			restitution: 0.3,
 		});
 
 		// We must add the contact materials to the world
 		world.addContactMaterial(groundContactMaterial);
+		world.addContactMaterial(objectToGroundContactMaterial);
 
 		// Create the ground plane
 		const groundShape = new CANNON.Plane();
@@ -135,7 +143,7 @@ namespace physics {
 			const halfExtents = new CANNON.Vec3(size.x, size.y, size.z);
 			const boxShape = new CANNON.Box(halfExtents);
 			const mass = this.prop.parameters.mass != undefined ? this.prop.parameters.mass : 0.1;
-			const boxBody = new CANNON.Body({ mass: mass, material: groundMaterial });
+			const boxBody = new CANNON.Body({ mass: mass, material: objectMaterial });
 
 			const center = new THREE.Vector3();
 			this.prop.aabb.getCenter(center);
@@ -145,14 +153,14 @@ namespace physics {
 			this.body = boxBody;
 			//console.log('set this body to boxbody', this.body);
 
-			if (!this.prop.parameters.solid)
-				this.add_helper_aabb();
+			//if (!this.prop.parameters.solid)
+			this.add_helper_aabb();
 
 		}
 		boxBody
 		AABBMesh
 		add_helper_aabb() {
-			if (!debug_wireframe)
+			if (!showWireframe)
 				return;
 			//console.log('add helper aabb');
 
@@ -170,27 +178,21 @@ namespace physics {
 		flipper = 1;
 		redOrBlue = false;
 		override loop() {
-			if (this.AABBMesh) {
-				let hold_on = new THREE.Vector3().copy(this.prop.group.position);
-				//hold_on.applyMatrix4(this.prop.object.matrix);
-				//hold_on.divideScalar(day.inchMeter);
-				this.AABBMesh.position.copy(hold_on);
-				this.AABBMesh.quaternion.copy(this.prop.group.quaternion);
-				if ((this.flipper -= day.dt) <= 0) {
-					if (this.redOrBlue) {
-						this.AABBMesh.material.color = new THREE.Color('red');
-					}
-					else {
-						this.AABBMesh.material.color = new THREE.Color('blue');
-					}
-					this.redOrBlue = !this.redOrBlue;
-					this.flipper = 1;
+			if (!this.AABBMesh)
+				return;
+			this.AABBMesh.position.copy(this.prop.group.position);
+			this.AABBMesh.quaternion.copy(this.prop.group.quaternion);
+			if ((this.flipper -= day.dt) <= 0) {
+				if (this.redOrBlue) {
+					this.AABBMesh.material.color = new THREE.Color('red');
 				}
+				else {
+					this.AABBMesh.material.color = new THREE.Color('blue');
+				}
+				this.redOrBlue = !this.redOrBlue;
+				this.flipper = 1;
 			}
-			//const center = new THREE.Vector3();
-			//this.prop.aabb.getCenter(center);
-			//center.divideScalar(100);
-			//this.body.position.set(center.x, center.y, center.z);
+
 		}
 
 	}

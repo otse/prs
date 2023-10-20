@@ -2,6 +2,7 @@ import app from "./app.js";
 import physics from "./physics.js";
 import pts from "./pts.js";
 import renderer from "./renderer.js";
+//import plc from "./plc.js";
 
 // https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/PointerLockControls.js
 
@@ -11,7 +12,6 @@ class player {
 	canJump;
 	cannonBody;
 	scope = this;
-	velocity;
 
 	constructor() {
 		this.setup();
@@ -91,63 +91,67 @@ class player {
 			}
 		})
 
-		this.velocity = this.cannonBody.velocity;
+		this.bodyVelocity = this.cannonBody.velocity;
 	}
-	force = 20.0;
-	quat = new THREE.Quaternion();
 
-	// Moves the camera to the Cannon.js object position and adds velocity to the object if the run key is down
-	inputVelocity = new THREE.Vector3();
-	euler = new THREE.Euler();
+	force = 20.0;
+	bodyVelocity;
+
 	loop(delta: number) {
+
+		let yaw = new THREE.Group();
+		let pitch = new THREE.Group();
+		//pitch.rotation.x = x;
+		//yaw.rotation.z = z;
+		yaw.add(pitch);
 
 		if (this.plc.enabled === false)
 			return;
 
-		this.inputVelocity.set(0, 0, 0);
+		let inputVelocity = new THREE.Vector3();
 
-		let x = 0, y = 0;
+		let x = 0, z = 0;
 
-		if (app.prompt_key('w')) {
-			y = 1;
-		}
-		if (app.prompt_key('s')) {
-			y = -1;
-		}
-		if (app.prompt_key('a')) {
+		if (app.prompt_key('w'))
+			z = 1;
+
+		if (app.prompt_key('s'))
+			z = -1;
+
+		if (app.prompt_key('a'))
 			x = -1;
-		}
-		if (app.prompt_key('d')) {
+
+		if (app.prompt_key('d'))
 			x = 1;
-		}
+
 		if (app.prompt_key(' ') && this.canJump) {
-			this.velocity.y = 10;
+			this.bodyVelocity.y = 10;
 			this.canJump = false;
 		}
 
 		const force = this.force * delta;
-		let angle = pts.angle([0, 0], [x, y]);
+		let angle = pts.angle([0, 0], [x, z]);
 
-		if (x || y) {
-			x = force * Math.sin(angle);
-			y = force * Math.cos(angle);
-
-			this.inputVelocity.x = x;
-			this.inputVelocity.z = y;
-		}
-		const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
 		const camera = this.plc.getObject();
-		_euler.setFromQuaternion(camera.quaternion);
-		// Convert velocity to world coordinates
-		this.euler.x = _euler.x;
-		this.euler.y = _euler.y;
-		this.euler.order = "YXZ";
-		this.quat.setFromEuler(this.euler);
-		this.inputVelocity.applyQuaternion(this.quat);
+		const euler = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(camera.quaternion);
+		// set our pitch to 0 which is forward 
+		// else our forward speed is 0 when looking down or up
+		euler.x = 0;
+
+
+		if (x || z) {
+			x = force * Math.sin(angle);
+			z = force * Math.cos(angle);
+
+			inputVelocity.x = x;
+			inputVelocity.z = z;
+		}
+		let quat = new THREE.Quaternion().setFromEuler(euler);
+		inputVelocity.applyQuaternion(quat);
 
 		// Add to the object
-		this.velocity.x += this.inputVelocity.x;
-		this.velocity.z += this.inputVelocity.z;
+		this.bodyVelocity.x += inputVelocity.x;
+		this.bodyVelocity.z += inputVelocity.z;
 
 		this.plc.getObject().position.copy(this.cannonBody.position);
 		this.plc.getObject().position.add(new THREE.Vector3(0, 1, 0));
