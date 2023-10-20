@@ -18,8 +18,9 @@
 		"src/day.d.ts"
 	],
 	"include": [
-		"./src"
-, "js/plc.js"	],
+		"./src",
+		"js/plc.js"
+	],
 	"exclude": [
 		"node_modules"
 	],

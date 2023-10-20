@@ -15,7 +15,7 @@ class player {
     }
     setup() {
         const instructions = document.querySelector('day-instructions');
-        this.plc = new pointer_lock_controls(renderer.camera, renderer.renderer.domElement);
+        this.plc = new pointer_lock_controls(renderer.camera, renderer.renderer_.domElement);
         this.plc.enabled = true;
         this.plc.getObject().position.y = 1.5;
         const controler = this.plc;
@@ -40,7 +40,7 @@ class player {
         var sphereShape = new CANNON.Sphere(radius);
         var sphereBody = new CANNON.Body({ mass: 1, material: physics.materials.player });
         sphereBody.addShape(sphereShape);
-        sphereBody.position.set(0, 10, 0);
+        sphereBody.position.set(0, 1, 0);
         sphereBody.linearDamping = 0.95;
         sphereBody.angularDamping = 0.999;
         physics.world.addBody(sphereBody);

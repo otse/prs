@@ -47,7 +47,7 @@ namespace props {
 			prop.group.quaternion,
 			prop.group.scale);
 
-		console.log('take collada prop', prop.object.name, prop.object.quaternion);
+		//console.log('take collada prop', prop.object.name, prop.object.quaternion);
 
 		prop.object.position.set(0, 0, 0);
 		prop.object.rotation.set(0, 0, 0);

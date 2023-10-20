@@ -1,26 +1,55 @@
+import glob from "./glob.js";
 import app from "./app.js";
 import player from "./player.js";
 import props from "./props.js";
 
+const fragmentPost = `
+varying vec2 vUv;
+uniform int compression;
+uniform sampler2D tDiffuse;
+float factor = 4.0;
+void main() {
+	vec4 diffuse = texture2D( tDiffuse, vUv );
+
+	diffuse = vec4(floor(diffuse.rgb * factor + 0.5) / factor, diffuse.a);
+
+	gl_FragColor = diffuse;
+	#include <colorspace_fragment>
+}`
+
+
+const vertexScreen = `
+varying vec2 vUv;
+void main() {
+	vUv = uv;
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}`
+
 namespace renderer {
 	// set up three.js here
 
-	export var scene, camera, renderer, ambient_light, clock;
+	export var scene, camera, renderer_, ambiance, clock;
 
 	export var delta = 0;
 
 	export var propsGroup;
 
-	export function boot() {
+	export var scene2, camera2, target, post, quad, plane
 
+	export var postToggle = true;
+
+
+	export function boot() {
+		window['renderer'] = renderer;
+		
 		console.log('renderer boot');
+
+		THREE.ColorManagement.enabled = true;
 
 		clock = new THREE.Clock();
 
 		propsGroup = new THREE.Group();
-		//propsGroup.matrix = propsGroup.matrix.makeScale(2, 2, 2);
-		//propsGroup.scale.set(2, 1, 1);
-		//propsGroup.matrix.makeTranslation(new THREE.Vector3(1000, 0, 0));
+
 		propsGroup.updateMatrix();
 		propsGroup.updateMatrixWorld();
 
@@ -30,11 +59,33 @@ namespace renderer {
 		mesh.add(new THREE.AxesHelper(1));
 		propsGroup.add(mesh);
 
-		//propsGroup.scale
-
 		scene = new THREE.Scene();
 		scene.add(propsGroup);
 		scene.background = new THREE.Color('white');
+
+		scene2 = new THREE.Scene();
+		scene2.matrixAutoUpdate = false;
+		//scene2.background = new THREE.Color('white');
+
+		target = new THREE.WebGLRenderTarget(512, 512, {
+			minFilter: THREE.NearestFilter,
+			magFilter: THREE.NearestFilter
+		});
+		post = new THREE.ShaderMaterial({
+			uniforms: {
+				tDiffuse: { value: target.texture },
+				compression: { value: 1 }
+			},
+			vertexShader: vertexScreen,
+			fragmentShader: fragmentPost,
+			depthWrite: false
+		});
+		plane = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
+		quad = new THREE.Mesh(plane, post);
+		quad.matrixAutoUpdate = false;
+		scene2.add(quad);
+
+		redo();
 
 		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -43,15 +94,18 @@ namespace renderer {
 
 		camera.position.z = 5;
 
-		renderer = new THREE.WebGLRenderer({ antialias: false });
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		renderer.shadowMap.enabled = true;
-		renderer.shadowMap.type = THREE.BasicShadowMap;
+		const dpi = window.devicePixelRatio;
+		renderer_ = new THREE.WebGLRenderer({ antialias: false });
+		renderer_.setPixelRatio(dpi);
+		renderer_.setSize(window.innerWidth, window.innerHeight);
+		renderer_.shadowMap.enabled = true;
+		renderer_.shadowMap.type = THREE.BasicShadowMap;
+		renderer_.setClearColor(0xffffff, 0.0);
 
-		ambient_light = new THREE.AmbientLight(0xffffff, 2);
-		scene.add(ambient_light);
+		ambiance = new THREE.AmbientLight(0xffffff, 2);
+		scene.add(ambiance);
 
-		let sun = new THREE.DirectionalLight(0xffffff, 2.0);
+		let sun = new THREE.DirectionalLight(0xffffff, 2);
 		sun.shadow.mapSize.width = 2048;
 		sun.shadow.mapSize.height = 2048;
 		sun.shadow.camera.near = 0.5;
@@ -64,7 +118,7 @@ namespace renderer {
 
 		const day_main = document.querySelector('day-main')!;
 
-		day_main.appendChild(renderer.domElement);
+		day_main.appendChild(renderer_.domElement);
 		// test
 
 
@@ -73,9 +127,20 @@ namespace renderer {
 		load_room();
 	}
 
+	function redo() {
+		target.setSize(window.innerWidth, window.innerHeight);
+		plane = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
+
+		camera2 = new THREE.OrthographicCamera(
+			window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -100, 100);
+		camera2.updateProjectionMatrix();
+	}
+
 	function onWindowResize() {
 
-		renderer.setSize(window.innerWidth, window.innerHeight);
+		redo();
+
+		renderer_.setSize(window.innerWidth, window.innerHeight);
 
 		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
@@ -85,12 +150,7 @@ namespace renderer {
 	}
 
 	function load_room() {
-		// .. boot er up
-
 		const loadingManager = new THREE.LoadingManager(function () {
-
-			//ren.scene.add(elf);
-
 		});
 
 		const loader = new collada_loader(loadingManager);
@@ -105,7 +165,7 @@ namespace renderer {
 			function fix_sticker(material) {
 				material.transparent = true;
 				material.polygonOffset = true;
-				material.polygonOffsetFactor = -1;
+				material.polygonOffsetFactor = -4;
 			}
 
 			function fix(material) {
@@ -115,7 +175,7 @@ namespace renderer {
 					// mineify
 					//THREE.NearestFilter
 					material.map.minFilter = material.map.magFilter = THREE.NearestFilter;
-					material.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+					material.map.anisotropy = renderer_.capabilities.getMaxAnisotropy();
 				}
 			}
 
@@ -156,7 +216,15 @@ namespace renderer {
 	var prevTime = 0, time = 0, frames = 0
 	export var fps = 0;
 
+	export function loop() {
+		if (glob.developer)
+			if (app.prompt_key('z') == 1)
+				postToggle = !postToggle;
+	}
+
 	export function render() {
+		loop();
+
 		delta = clock.getDelta();
 
 		frames++;
@@ -171,9 +239,26 @@ namespace renderer {
 			app.fluke_set_innerhtml('day-stats', `fps: ${fps}`);
 		}
 
-		renderer.setRenderTarget(null);
-		renderer.clear();
-		renderer.render(scene, camera);
+		if (postToggle) {
+			renderer_.shadowMap.enabled = true;
+
+			renderer_.setRenderTarget(target);
+			renderer_.clear();
+			renderer_.render(scene, camera);
+
+			renderer_.shadowMap.enabled = false;
+
+			renderer_.setRenderTarget(null);
+			renderer_.clear();
+			renderer_.render(scene2, camera2);
+		}
+		else {
+			renderer_.shadowMap.enabled = true;
+
+			renderer_.setRenderTarget(null);
+			renderer_.clear();
+			renderer_.render(scene, camera);
+		}
 	}
 }
 

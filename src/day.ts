@@ -1,4 +1,5 @@
 import app from "./app.js";
+import glob from "./glob.js";
 import physics from "./physics.js";
 import player from "./player.js";
 import props from "./props.js";
@@ -6,17 +7,20 @@ import points from "./pts.js";
 import renderer from "./renderer.js";
 import viewport from "./viewport.js";
 
+glob.developer = true;
+
 namespace day {
 	export const inch = 0.0254;
 	export const inchMeter = (1 / 0.0254);
 	export const timeStep = (1 / 60);
+	
 	export var day_main;
 	export var dt = 0;
 
 	export var gviewport: viewport;
 	export var gplayer: player;
 
-	export function boot() {
+	export function boot() {		
 		console.log('day setting up');
 
 		gviewport = new viewport;

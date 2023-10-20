@@ -4,7 +4,7 @@ import renderer from "./renderer.js";
 
 namespace physics {
 
-	export const showWireframe = true;
+	export const showWireframe = false;
 
 	export var materials: any = {}
 
@@ -38,28 +38,35 @@ namespace physics {
 
 		// Object
 		materials.generic = new CANNON.Material('object');
-		const objectToGroundContactMaterial = new CANNON.ContactMaterial(
+		const objectToGroundContact = new CANNON.ContactMaterial(
 			materials.generic, materials.ground, {
 			friction: 0.0001,
 			restitution: 0.3,
 		});
 
-		const playerToWallContactMaterial = new CANNON.ContactMaterial(
+		const playerToWallContact = new CANNON.ContactMaterial(
 			materials.player, materials.wall, {
 			friction: 1.0,
 			restitution: 0.0,
 		});
 
-		const playerToGroundContactMaterial = new CANNON.ContactMaterial(
+		const playerToGroundContact = new CANNON.ContactMaterial(
 			materials.player, materials.ground, {
 			friction: 0.002,
 			restitution: 0.3,
 		});
 
+		const genericToSolidContact = new CANNON.ContactMaterial(
+			materials.generic, materials.solid, {
+			friction: 0.00,
+			restitution: 0.3,
+		});
+
 		// We must add the contact materials to the world
-		world.addContactMaterial(objectToGroundContactMaterial);
-		world.addContactMaterial(playerToWallContactMaterial);
-		world.addContactMaterial(playerToGroundContactMaterial);
+		world.addContactMaterial(objectToGroundContact);
+		world.addContactMaterial(playerToWallContact);
+		world.addContactMaterial(playerToGroundContact);
+		world.addContactMaterial(genericToSolidContact);
 
 		// Create the ground plane
 		const groundShape = new CANNON.Plane();
@@ -166,7 +173,7 @@ namespace physics {
 			const center = new THREE.Vector3();
 			this.prop.aabb.getCenter(center);
 			boxBody.position.copy(center);
-			console.log(boxBody.quaternion);
+			//console.log(boxBody.quaternion);
 			//new THREE.Quaternion().
 
 			//boxBody.rotation.copy(this.prop.oldRotation);

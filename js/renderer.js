@@ -1,38 +1,81 @@
+import glob from "./glob.js";
 import app from "./app.js";
 import props from "./props.js";
+const fragmentPost = `
+varying vec2 vUv;
+uniform int compression;
+uniform sampler2D tDiffuse;
+float factor = 4.0;
+void main() {
+	vec4 diffuse = texture2D( tDiffuse, vUv );
+
+	diffuse = vec4(floor(diffuse.rgb * factor + 0.5) / factor, diffuse.a);
+
+	gl_FragColor = diffuse;
+	#include <colorspace_fragment>
+}`;
+const vertexScreen = `
+varying vec2 vUv;
+void main() {
+	vUv = uv;
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}`;
 var renderer;
-(function (renderer_1) {
+(function (renderer) {
     // set up three.js here
-    renderer_1.delta = 0;
+    renderer.delta = 0;
+    renderer.postToggle = true;
     function boot() {
+        window['renderer'] = renderer;
         console.log('renderer boot');
-        renderer_1.clock = new THREE.Clock();
-        renderer_1.propsGroup = new THREE.Group();
-        //propsGroup.matrix = propsGroup.matrix.makeScale(2, 2, 2);
-        //propsGroup.scale.set(2, 1, 1);
-        //propsGroup.matrix.makeTranslation(new THREE.Vector3(1000, 0, 0));
-        renderer_1.propsGroup.updateMatrix();
-        renderer_1.propsGroup.updateMatrixWorld();
+        THREE.ColorManagement.enabled = true;
+        renderer.clock = new THREE.Clock();
+        renderer.propsGroup = new THREE.Group();
+        renderer.propsGroup.updateMatrix();
+        renderer.propsGroup.updateMatrixWorld();
         const material = new THREE.MeshLambertMaterial({ color: 'red' });
         const geometry = new THREE.RingGeometry(0.5, 1, 8);
         const mesh = new THREE.Mesh(geometry, material);
         mesh.add(new THREE.AxesHelper(1));
-        renderer_1.propsGroup.add(mesh);
-        //propsGroup.scale
-        renderer_1.scene = new THREE.Scene();
-        renderer_1.scene.add(renderer_1.propsGroup);
-        renderer_1.scene.background = new THREE.Color('white');
-        renderer_1.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        renderer.propsGroup.add(mesh);
+        renderer.scene = new THREE.Scene();
+        renderer.scene.add(renderer.propsGroup);
+        renderer.scene.background = new THREE.Color('white');
+        renderer.scene2 = new THREE.Scene();
+        renderer.scene2.matrixAutoUpdate = false;
+        //scene2.background = new THREE.Color('white');
+        renderer.target = new THREE.WebGLRenderTarget(512, 512, {
+            minFilter: THREE.NearestFilter,
+            magFilter: THREE.NearestFilter
+        });
+        renderer.post = new THREE.ShaderMaterial({
+            uniforms: {
+                tDiffuse: { value: renderer.target.texture },
+                compression: { value: 1 }
+            },
+            vertexShader: vertexScreen,
+            fragmentShader: fragmentPost,
+            depthWrite: false
+        });
+        renderer.plane = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
+        renderer.quad = new THREE.Mesh(renderer.plane, renderer.post);
+        renderer.quad.matrixAutoUpdate = false;
+        renderer.scene2.add(renderer.quad);
+        redo();
+        renderer.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const helper = new THREE.AxesHelper(1);
-        renderer_1.scene.add(helper);
-        renderer_1.camera.position.z = 5;
-        renderer_1.renderer = new THREE.WebGLRenderer({ antialias: false });
-        renderer_1.renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer_1.renderer.shadowMap.enabled = true;
-        renderer_1.renderer.shadowMap.type = THREE.BasicShadowMap;
-        renderer_1.ambient_light = new THREE.AmbientLight(0xffffff, 2);
-        renderer_1.scene.add(renderer_1.ambient_light);
-        let sun = new THREE.DirectionalLight(0xffffff, 2.0);
+        renderer.scene.add(helper);
+        renderer.camera.position.z = 5;
+        const dpi = window.devicePixelRatio;
+        renderer.renderer_ = new THREE.WebGLRenderer({ antialias: false });
+        renderer.renderer_.setPixelRatio(dpi);
+        renderer.renderer_.setSize(window.innerWidth, window.innerHeight);
+        renderer.renderer_.shadowMap.enabled = true;
+        renderer.renderer_.shadowMap.type = THREE.BasicShadowMap;
+        renderer.renderer_.setClearColor(0xffffff, 0.0);
+        renderer.ambiance = new THREE.AmbientLight(0xffffff, 2);
+        renderer.scene.add(renderer.ambiance);
+        let sun = new THREE.DirectionalLight(0xffffff, 2);
         sun.shadow.mapSize.width = 2048;
         sun.shadow.mapSize.height = 2048;
         sun.shadow.camera.near = 0.5;
@@ -40,25 +83,30 @@ var renderer;
         const extend = 1000;
         sun.position.set(-30, 200, -150);
         sun.castShadow = true;
-        renderer_1.scene.add(sun);
-        renderer_1.scene.add(sun.target);
+        renderer.scene.add(sun);
+        renderer.scene.add(sun.target);
         const day_main = document.querySelector('day-main');
-        day_main.appendChild(renderer_1.renderer.domElement);
+        day_main.appendChild(renderer.renderer_.domElement);
         // test
         window.addEventListener('resize', onWindowResize);
         load_room();
     }
-    renderer_1.boot = boot;
+    renderer.boot = boot;
+    function redo() {
+        renderer.target.setSize(window.innerWidth, window.innerHeight);
+        renderer.plane = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
+        renderer.camera2 = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, -100, 100);
+        renderer.camera2.updateProjectionMatrix();
+    }
     function onWindowResize() {
-        renderer_1.renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer_1.camera.aspect = window.innerWidth / window.innerHeight;
-        renderer_1.camera.updateProjectionMatrix();
+        redo();
+        renderer.renderer_.setSize(window.innerWidth, window.innerHeight);
+        renderer.camera.aspect = window.innerWidth / window.innerHeight;
+        renderer.camera.updateProjectionMatrix();
         render();
     }
     function load_room() {
-        // .. boot er up
         const loadingManager = new THREE.LoadingManager(function () {
-            //ren.scene.add(elf);
         });
         const loader = new collada_loader(loadingManager);
         loader.load('./assets/first_apartment_bad.dae', function (collada) {
@@ -68,7 +116,7 @@ var renderer;
             function fix_sticker(material) {
                 material.transparent = true;
                 material.polygonOffset = true;
-                material.polygonOffsetFactor = -1;
+                material.polygonOffsetFactor = -4;
             }
             function fix(material) {
                 if (material.name.includes('sticker'))
@@ -77,7 +125,7 @@ var renderer;
                     // mineify
                     //THREE.NearestFilter
                     material.map.minFilter = material.map.magFilter = THREE.NearestFilter;
-                    material.map.anisotropy = renderer_1.renderer.capabilities.getMaxAnisotropy();
+                    material.map.anisotropy = renderer.renderer_.capabilities.getMaxAnisotropy();
                 }
             }
             const propss = [];
@@ -105,25 +153,45 @@ var renderer;
             const group = new THREE.Group();
             //group.rotation.set(0, -Math.PI / 2, 0);
             group.add(myScene);
-            renderer_1.scene.add(group);
+            renderer.scene.add(group);
         });
     }
     var prevTime = 0, time = 0, frames = 0;
-    renderer_1.fps = 0;
+    renderer.fps = 0;
+    function loop() {
+        if (glob.developer)
+            if (app.prompt_key('z') == 1)
+                renderer.postToggle = !renderer.postToggle;
+    }
+    renderer.loop = loop;
     function render() {
-        renderer_1.delta = renderer_1.clock.getDelta();
+        loop();
+        renderer.delta = renderer.clock.getDelta();
         frames++;
         time = (performance || Date).now();
         if (time >= prevTime + 1000) {
-            renderer_1.fps = (frames * 1000) / (time - prevTime);
+            renderer.fps = (frames * 1000) / (time - prevTime);
             prevTime = time;
             frames = 0;
-            app.fluke_set_innerhtml('day-stats', `fps: ${renderer_1.fps}`);
+            app.fluke_set_innerhtml('day-stats', `fps: ${renderer.fps}`);
         }
-        renderer_1.renderer.setRenderTarget(null);
-        renderer_1.renderer.clear();
-        renderer_1.renderer.render(renderer_1.scene, renderer_1.camera);
+        if (renderer.postToggle) {
+            renderer.renderer_.shadowMap.enabled = true;
+            renderer.renderer_.setRenderTarget(renderer.target);
+            renderer.renderer_.clear();
+            renderer.renderer_.render(renderer.scene, renderer.camera);
+            renderer.renderer_.shadowMap.enabled = false;
+            renderer.renderer_.setRenderTarget(null);
+            renderer.renderer_.clear();
+            renderer.renderer_.render(renderer.scene2, renderer.camera2);
+        }
+        else {
+            renderer.renderer_.shadowMap.enabled = true;
+            renderer.renderer_.setRenderTarget(null);
+            renderer.renderer_.clear();
+            renderer.renderer_.render(renderer.scene, renderer.camera);
+        }
     }
-    renderer_1.render = render;
+    renderer.render = render;
 })(renderer || (renderer = {}));
 export default renderer;

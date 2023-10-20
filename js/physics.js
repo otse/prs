@@ -2,7 +2,7 @@ import day from "./day.js";
 import renderer from "./renderer.js";
 var physics;
 (function (physics) {
-    physics.showWireframe = true;
+    physics.showWireframe = false;
     physics.materials = {};
     physics.walls = [], physics.balls = [], physics.ballMeshes = [], physics.boxes = [], physics.boxMeshes = [];
     function boot() {
@@ -26,22 +26,27 @@ var physics;
         physics.materials.wall = new CANNON.Material('wall');
         // Object
         physics.materials.generic = new CANNON.Material('object');
-        const objectToGroundContactMaterial = new CANNON.ContactMaterial(physics.materials.generic, physics.materials.ground, {
+        const objectToGroundContact = new CANNON.ContactMaterial(physics.materials.generic, physics.materials.ground, {
             friction: 0.0001,
             restitution: 0.3,
         });
-        const playerToWallContactMaterial = new CANNON.ContactMaterial(physics.materials.player, physics.materials.wall, {
+        const playerToWallContact = new CANNON.ContactMaterial(physics.materials.player, physics.materials.wall, {
             friction: 1.0,
             restitution: 0.0,
         });
-        const playerToGroundContactMaterial = new CANNON.ContactMaterial(physics.materials.player, physics.materials.ground, {
+        const playerToGroundContact = new CANNON.ContactMaterial(physics.materials.player, physics.materials.ground, {
             friction: 0.002,
             restitution: 0.3,
         });
+        const genericToSolidContact = new CANNON.ContactMaterial(physics.materials.generic, physics.materials.solid, {
+            friction: 0.00,
+            restitution: 0.3,
+        });
         // We must add the contact materials to the world
-        physics.world.addContactMaterial(objectToGroundContactMaterial);
-        physics.world.addContactMaterial(playerToWallContactMaterial);
-        physics.world.addContactMaterial(playerToGroundContactMaterial);
+        physics.world.addContactMaterial(objectToGroundContact);
+        physics.world.addContactMaterial(playerToWallContact);
+        physics.world.addContactMaterial(playerToGroundContact);
+        physics.world.addContactMaterial(genericToSolidContact);
         // Create the ground plane
         const groundShape = new CANNON.Plane();
         const groundBody = new CANNON.Body({ mass: 0, material: physics.materials.ground });
@@ -132,7 +137,7 @@ var physics;
             const center = new THREE.Vector3();
             this.prop.aabb.getCenter(center);
             boxBody.position.copy(center);
-            console.log(boxBody.quaternion);
+            //console.log(boxBody.quaternion);
             //new THREE.Quaternion().
             //boxBody.rotation.copy(this.prop.oldRotation);
             boxBody.addShape(boxShape);

@@ -1,9 +1,11 @@
+import glob from "./glob.js";
 import physics from "./physics.js";
 import player from "./player.js";
 import props from "./props.js";
 import points from "./pts.js";
 import renderer from "./renderer.js";
 import viewport from "./viewport.js";
+glob.developer = true;
 var day;
 (function (day) {
     day.inch = 0.0254;
