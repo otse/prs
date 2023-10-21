@@ -125,6 +125,7 @@ namespace renderer {
 		renderer_.shadowMap.enabled = true;
 		renderer_.shadowMap.type = THREE.BasicShadowMap;
 		renderer_.setClearColor(0xffffff, 0.0);
+		//renderer_.toneMapping = THREE.ReinhardToneMapping;
 
 		ambiance = new THREE.AmbientLight(0xffffff, 2);
 		scene.add(ambiance);

@@ -7,6 +7,9 @@ namespace props {
 	export function factory(object: any) {
 		let prop;
 		switch (object.name) {
+			case 'light':
+				prop = new plight(object, { mass: 0 });
+				break;
 			case 'wall':
 			case 'solid':
 				prop = new pbox(object, { mass: 0 });
@@ -155,6 +158,23 @@ namespace props {
 			this.group.position.copy(this.fbody.body.position);
 			this.group.quaternion.copy(this.fbody.body.quaternion);
 			this.fbody.loop();
+		}
+	}
+
+	export class plight extends prop {
+		constructor(object, parameters: iparameters) {
+			super(object, parameters);
+		}
+		override setup() {
+			//this.object.visible = false;
+			const center = new THREE.Vector3();
+			this.aabb.getCenter(center);
+			let light = new THREE.PointLight(0xffffff, 0.1, 10);
+			light.position.set(0, 0, -5);
+			//this.group.add(new THREE.AxesHelper(10));
+			this.group.add(light);
+		}
+		override loop() {
 		}
 	}
 

@@ -6,6 +6,9 @@ var props;
     function factory(object) {
         let prop;
         switch (object.name) {
+            case 'light':
+                prop = new plight(object, { mass: 0 });
+                break;
             case 'wall':
             case 'solid':
                 prop = new pbox(object, { mass: 0 });
@@ -140,5 +143,22 @@ var props;
         }
     }
     props_1.pdoor = pdoor;
+    class plight extends prop {
+        constructor(object, parameters) {
+            super(object, parameters);
+        }
+        setup() {
+            //this.object.visible = false;
+            const center = new THREE.Vector3();
+            this.aabb.getCenter(center);
+            let light = new THREE.PointLight(0xffffff, 0.1, 10);
+            light.position.set(0, 0, -5);
+            //this.group.add(new THREE.AxesHelper(10));
+            this.group.add(light);
+        }
+        loop() {
+        }
+    }
+    props_1.plight = plight;
 })(props || (props = {}));
 export default props;

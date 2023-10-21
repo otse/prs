@@ -23,7 +23,8 @@ namespace sketchup {
 
 			function fix(material) {
 				//console.log(material);
-				
+				material.flatShading = true;
+				material.needsUpdate = true;
 				if (material.name.includes('sticker'))
 					fix_sticker(material);
 				if (material.map) {

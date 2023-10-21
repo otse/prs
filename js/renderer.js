@@ -95,6 +95,7 @@ var renderer;
         renderer.renderer_.shadowMap.enabled = true;
         renderer.renderer_.shadowMap.type = THREE.BasicShadowMap;
         renderer.renderer_.setClearColor(0xffffff, 0.0);
+        //renderer_.toneMapping = THREE.ReinhardToneMapping;
         renderer.ambiance = new THREE.AmbientLight(0xffffff, 2);
         renderer.scene.add(renderer.ambiance);
         let sun = new THREE.DirectionalLight(0xffffff, 2);
