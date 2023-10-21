@@ -41,7 +41,7 @@ var renderer;
     renderer.delta = 0;
     // i like the sketchup palette a lot,
     // no need for color reduce
-    renderer.postToggle = true;
+    renderer.postToggle = false;
     function boot() {
         window['renderer'] = renderer;
         console.log('renderer boot');

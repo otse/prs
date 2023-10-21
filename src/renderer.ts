@@ -54,7 +54,7 @@ namespace renderer {
 
 	// i like the sketchup palette a lot,
 	// no need for color reduce
-	export var postToggle = true;
+	export var postToggle = false;
 
 
 	export function boot() {

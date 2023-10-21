@@ -11,9 +11,21 @@ namespace props {
 			case 'solid':
 				prop = new pbox(object, { mass: 0 });
 				break;
-			case 'door':
-				console.log('making a door');
-				prop = new pdoor(object, { mass: 0 });
+			case 'door_1':
+				// blue positive
+				prop = new pdoor(object, { mass: 0, door: 'door_1' });
+				break;
+			case 'door_2':
+				// blue negative
+				prop = new pdoor(object, { mass: 0, door: 'door_2' });
+				break;
+			case 'door_3':
+				// red positive
+				prop = new pdoor(object, { mass: 0, door: 'door_3' });
+				break;
+			case 'door_4':
+				// red negative
+				prop = new pdoor(object, { mass: 0, door: 'door_4' });
 				break;
 			case 'fridge':
 				prop = new pbox(object, { mass: 3 });
@@ -73,6 +85,7 @@ namespace props {
 	interface iparameters {
 		mass: number;
 		wall?: boolean;
+		door?: 'door_1' | 'door_2' | 'door_3' | 'door_4'
 	};
 
 	export class prop {
@@ -135,8 +148,8 @@ namespace props {
 		}
 		override setup() {
 			new physics.fdoor(this);
-			this.object.add(new THREE.AxesHelper(20));
-			this.group.add(new THREE.AxesHelper(20));
+			//this.object.add(new THREE.AxesHelper(20));
+			//this.group.add(new THREE.AxesHelper(20));
 		}
 		override loop() {
 			this.group.position.copy(this.fbody.body.position);

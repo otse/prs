@@ -2,7 +2,7 @@ import day from "./day.js";
 import renderer from "./renderer.js";
 var physics;
 (function (physics) {
-    physics.showWireframe = true;
+    physics.showWireframe = false;
     physics.materials = {};
     physics.walls = [], physics.balls = [], physics.ballMeshes = [], physics.boxes = [], physics.boxMeshes = [];
     function boot() {
@@ -93,7 +93,7 @@ var physics;
             this.boxMesh = new THREE.Mesh(boxGeometry, material);
             this.boxMesh.castShadow = true;
             this.boxMesh.receiveShadow = true;
-            this.boxMesh.add(new THREE.AxesHelper(1));
+            //this.boxMesh.add(new THREE.AxesHelper(1));
             const x = 2; //(Math.random() - 0.5) * 1;
             const y = 4;
             const z = 1; //(Math.random() - 0.5) * 2;
@@ -198,23 +198,26 @@ var physics;
             const hingedBody = new CANNON.Body({ mass: 0.5 });
             hingedBody.addShape(hingedShape);
             hingedBody.position.copy(center);
-            //hingedBody.position.z += size.z;
             physics.world.addBody(hingedBody);
             const halfExtents2 = new CANNON.Vec3(0, size.y / 2, 0);
             const staticShape = new CANNON.Box(halfExtents2);
             const staticBody = new CANNON.Body({ mass: 0 });
             staticBody.addShape(staticShape);
             staticBody.position.copy(center);
-            //staticBody.position.z -= size.z;
             physics.world.addBody(staticBody);
+            const pivots = [
+                [0, 0, 0.5], [0, 0, -0.5], [0.5, 0, 0], [-0.5, 0, 0]
+            ];
+            const n = parseInt(this.prop.parameters.door.slice(-1)) - 1;
+            const pivot = pivots[n];
             const constraint = new CANNON.HingeConstraint(staticBody, hingedBody, {
-                pivotA: new CANNON.Vec3(0, 0, size.z / 2),
+                pivotA: new CANNON.Vec3(size.x * pivot[0], 0, size.z * pivot[2]),
                 axisA: new CANNON.Vec3(0, 1, 0),
-                pivotB: new CANNON.Vec3(0, 0, size.z / 2),
+                pivotB: new CANNON.Vec3(size.x * pivot[0], 0, size.z * pivot[2]),
                 axisB: new CANNON.Vec3(0, 1, 0),
             });
             physics.world.addConstraint(constraint);
-            console.log(constraint);
+            //console.log(constraint);
             this.constraint = constraint;
             this.body = hingedBody;
             this.add_helper_aabb();
@@ -233,6 +236,8 @@ var physics;
             renderer.scene.add(this.AABBMesh);
         }
         loop() {
+            if (!physics.showWireframe)
+                return;
             this.AABBMesh.position.copy(this.prop.group.position);
             this.AABBMesh.quaternion.copy(this.prop.group.quaternion);
             //this.AABBMesh2.position.copy(this.prop.group.position);
