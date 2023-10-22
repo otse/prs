@@ -5,14 +5,13 @@ skills:
 good looking - zuck - religion - car person - mone
 
 you can choose 2 skills
-for example, you can have zuck, and religion
+for example, you can have zuck, and religionwa
 
 alexa wakes you up. she says:
 hey. its me alexa. your virtual assistant.
 ...
 you had too many red bulls last night. and pizza. your world is spinning, is it not?
 anyway.
-listen. do as i say, or today will be your last.
 you did not pay rent yesterday. the landlord will be here any moment.
 whatever you do, remember: don't talk about his outfit.
 
@@ -28,7 +27,7 @@ hasbullah appears and asks: i am here for rent. do you have the mone
 when you ask about his outfit, you die.
 
 when you miss the skills, alexa will help out.
-alexa: we can handle this. just give him the fridge. or the toilet.
+alexa: we can handle this. just give him the fridge.
 
 -> when you try to give hasbullah the toilet: no. something else
 (this means alexa isn't always right)
@@ -45,12 +44,3 @@ you go downstairs. the janitor is mopping. when he turns to look at you,
 its hasbullah in a different style. as you try to pass, he initiates a talk.
 
 the floors are wet. you're welcome.
-
-[percepti-bobble] wait, aren't you the landlord?
-[affirmation] i shall watch my step
-
-when you talk about the way he looks, you die, as warned by alexa
-
-in front of your block is parked your car. when you have mone, it is a nicer car.
-
-a cat is sitting on the car.

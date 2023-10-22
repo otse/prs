@@ -1,8 +1,9 @@
+import audio from "./audio.js";
 import day from "./day.js";
 import renderer from "./renderer.js";
 var physics;
 (function (physics) {
-    physics.showWireframe = false;
+    physics.wireframe_helpers = false;
     physics.materials = {};
     physics.walls = [], physics.balls = [], physics.ballMeshes = [], physics.boxes = [], physics.boxMeshes = [];
     function boot() {
@@ -128,7 +129,8 @@ var physics;
             size.divideScalar(2);
             const halfExtents = new CANNON.Vec3(size.x, size.y, size.z);
             const boxShape = new CANNON.Box(halfExtents);
-            const mass = this.prop.parameters.mass != undefined ? this.prop.parameters.mass : 0.1;
+            const weight = this.prop.parameters.weight;
+            const mass = this.prop.parameters.mass;
             let material;
             switch (prop.object.name) {
                 case 'wall':
@@ -146,13 +148,52 @@ var physics;
             boxBody.addShape(boxShape);
             physics.world.addBody(boxBody);
             this.body = boxBody;
-            //console.log('set this body to boxbody', this.body);
+            //if (prop.parameters.mass == 0)
+            //	boxBody.collisionResponse = 0;
+            boxBody.addEventListener("collide", function (e) {
+                if (prop.parameters.mass == 0)
+                    return;
+                const velocity = e.contact.getImpactVelocityAlongNormal();
+                let clamp;
+                clamp = day.clamp(mass * velocity, 0.1, 3);
+                //clamp = day.clamp(clamp, 0.1, 1);
+                clamp = day.clamp(velocity, 0.1, 1.0);
+                //console.log('velocity, clamp', velocity, clamp);
+                let sample = '';
+                if (velocity < 0.5) {
+                    console.log('soft');
+                    sample = day.sample([
+                        'cardboard_box_impact_soft1',
+                        'cardboard_box_impact_soft2',
+                        'cardboard_box_impact_soft3',
+                        'cardboard_box_impact_soft4',
+                        'cardboard_box_impact_soft5',
+                        'cardboard_box_impact_soft6',
+                        'cardboard_box_impact_soft7',
+                    ]);
+                }
+                else {
+                    console.log('hard');
+                    sample = day.sample([
+                        'cardboard_box_impact_hard1',
+                        'cardboard_box_impact_hard2',
+                        'cardboard_box_impact_hard3',
+                        'cardboard_box_impact_hard4',
+                        'cardboard_box_impact_hard5',
+                        'cardboard_box_impact_hard6',
+                        'cardboard_box_impact_hard7',
+                    ]);
+                }
+                let sound = audio.playOnce(sample, clamp);
+                if (sound)
+                    prop.group.add(sound);
+            });
             //if (!this.prop.parameters.solid)
             this.add_helper_aabb();
         }
         AABBMesh;
         add_helper_aabb() {
-            if (!physics.showWireframe)
+            if (!physics.wireframe_helpers)
                 return;
             //console.log('add helper aabb');
             const size = new THREE.Vector3();
@@ -184,6 +225,7 @@ var physics;
         }
     }
     physics.fbox = fbox;
+    const door_arbitrary_shrink = 0.88;
     class fdoor extends fbody {
         constraint;
         constructor(prop) {
@@ -192,12 +234,16 @@ var physics;
             const center = new THREE.Vector3();
             this.prop.aabb.getSize(size);
             this.prop.aabb.getCenter(center);
-            size.multiplyScalar(0.99);
-            const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
+            const shrink = new THREE.Vector3();
+            shrink.copy(size);
+            shrink.multiplyScalar(door_arbitrary_shrink);
+            shrink.divideScalar(2);
+            const halfExtents = new CANNON.Vec3(shrink.x, shrink.y, shrink.z);
             const hingedShape = new CANNON.Box(halfExtents);
             const hingedBody = new CANNON.Body({ mass: 0.5 });
             hingedBody.addShape(hingedShape);
             hingedBody.position.copy(center);
+            hingedBody.linearDamping = 0.25;
             physics.world.addBody(hingedBody);
             const halfExtents2 = new CANNON.Vec3(0, size.y / 2, 0);
             const staticShape = new CANNON.Box(halfExtents2);
@@ -225,7 +271,7 @@ var physics;
         AABBMesh;
         AABBMesh2;
         add_helper_aabb() {
-            if (!physics.showWireframe)
+            if (!physics.wireframe_helpers)
                 return;
             const size = new THREE.Vector3();
             this.prop.aabb.getSize(size);
@@ -236,7 +282,7 @@ var physics;
             renderer.scene.add(this.AABBMesh);
         }
         loop() {
-            if (!physics.showWireframe)
+            if (!physics.wireframe_helpers)
                 return;
             this.AABBMesh.position.copy(this.prop.group.position);
             this.AABBMesh.quaternion.copy(this.prop.group.quaternion);

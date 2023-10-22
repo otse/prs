@@ -1,3 +1,4 @@
+import audio from "./audio.js";
 import glob from "./glob.js";
 import physics from "./physics.js";
 import player from "./player.js";
@@ -12,14 +13,24 @@ var day;
     day.inchMeter = (1 / 0.0254);
     day.timeStep = (1 / 60);
     day.dt = 0;
+    function sample(a) {
+        return a[Math.floor(Math.random() * a.length)];
+    }
+    day.sample = sample;
+    function clamp(val, min, max) {
+        return val > max ? max : val < min ? min : val;
+    }
+    day.clamp = clamp;
     function boot() {
         console.log('day setting up');
         day.gviewport = new viewport;
+        day.day_instructions = document.querySelector('day-instructions');
         day.day_main = document.querySelector('day-main');
         points.add([0, 0], [1, 1]);
         physics.boot();
         props.boot();
         renderer.boot();
+        audio.boot();
         day.gplayer = new player();
         // new physics.simple_box();
     }

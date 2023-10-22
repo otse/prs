@@ -86,6 +86,7 @@ namespace props {
 	export var props: prop[] = []
 
 	interface iparameters {
+		weight?: number;
 		mass: number;
 		wall?: boolean;
 		door?: 'door_1' | 'door_2' | 'door_3' | 'door_4'

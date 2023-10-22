@@ -1,4 +1,5 @@
 import app from "./app.js";
+import day from "./day.js";
 import physics from "./physics.js";
 import pts from "./pts.js";
 import renderer from "./renderer.js";
@@ -14,23 +15,22 @@ class player {
         this.createPhysics();
     }
     setup() {
-        const instructions = document.querySelector('day-instructions');
         this.plc = new pointer_lock_controls(renderer.camera, renderer.renderer_.domElement);
         this.plc.enabled = true;
         this.plc.getObject().position.y = 1.5;
         const controler = this.plc;
-        instructions.addEventListener('click', function () {
+        day.day_instructions.addEventListener('click', function () {
             controler.lock();
         });
         this.plc.addEventListener('lock', function () {
             console.log('lock');
-            instructions.style.display = 'none';
+            day.day_instructions.style.display = 'none';
             //blocker.style.display = 'none';
         });
         this.plc.addEventListener('unlock', function () {
             console.log('unlock');
             //blocker.style.display = 'block';
-            instructions.style.display = '';
+            day.day_instructions.style.display = '';
         });
         renderer.scene.add(this.plc.getObject());
     }

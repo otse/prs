@@ -51,7 +51,6 @@ var sketchup;
                 prop.complete();
             }
             const group = new THREE.Group();
-            //group.rotation.set(0, -Math.PI / 2, 0);
             group.add(myScene);
             renderer.scene.add(group);
         });
