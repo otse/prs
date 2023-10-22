@@ -30,16 +30,16 @@ var props;
                 prop = new pdoor(object, { mass: 0, door: 'door_4' });
                 break;
             case 'fridge':
-                prop = new pbox(object, { mass: 3 });
+                prop = new pbox(object, { mass: 3, material: 'metal' });
                 break;
             case 'cup':
-                prop = new pbox(object, { mass: 0.2 });
+                prop = new pbox(object, { mass: 0.2, material: 'plastic' });
                 break;
             case 'compactdiscs':
-                prop = new pbox(object, { mass: 0.7 });
+                prop = new pbox(object, { mass: 0.7, material: 'cardboard' });
                 break;
             case 'matress':
-                prop = new pbox(object, { mass: 2.0 });
+                prop = new pbox(object, { mass: 2.0, material: 'cardboard' });
                 break;
             default:
         }
@@ -160,5 +160,53 @@ var props;
         }
     }
     props_1.plight = plight;
+    props_1.impact_sounds = {
+        'cardboard': {
+            soft: [
+                'cardboard_box_impact_soft1',
+                'cardboard_box_impact_soft2',
+                'cardboard_box_impact_soft3',
+                'cardboard_box_impact_soft4',
+                'cardboard_box_impact_soft5',
+                'cardboard_box_impact_soft6',
+                'cardboard_box_impact_soft7',
+            ],
+            hard: [
+                'cardboard_box_impact_hard1',
+                'cardboard_box_impact_hard2',
+                'cardboard_box_impact_hard3',
+                'cardboard_box_impact_hard4',
+                'cardboard_box_impact_hard5',
+                'cardboard_box_impact_hard6',
+                'cardboard_box_impact_hard7',
+            ]
+        },
+        'plastic': {
+            soft: [
+                'plastic_box_impact_soft1',
+                'plastic_box_impact_soft2',
+                'plastic_box_impact_soft3',
+                'plastic_box_impact_soft4',
+            ],
+            hard: [
+                'plastic_box_impact_hard1',
+                'plastic_box_impact_hard2',
+                'plastic_box_impact_hard3',
+                'plastic_box_impact_hard4',
+            ]
+        },
+        'metal': {
+            soft: [
+                'metal_solid_impact_soft1',
+                'metal_solid_impact_soft2',
+                'metal_solid_impact_soft3',
+            ],
+            hard: [
+                'metal_solid_impact_hard1',
+                'metal_solid_impact_hard4',
+                'metal_solid_impact_hard5',
+            ],
+        }
+    };
 })(props || (props = {}));
 export default props;

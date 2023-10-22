@@ -21,7 +21,27 @@ namespace audio {
 		'./assets/sound/cardboard/cardboard_box_impact_soft4.wav',
 		'./assets/sound/cardboard/cardboard_box_impact_soft5.wav',
 		'./assets/sound/cardboard/cardboard_box_impact_soft6.wav',
-		'./assets/sound/cardboard/cardboard_box_impact_soft7.wav',
+		'./assets/sound/cardboard/cardboard_box_impact_soft7.wav'
+	]
+	
+	export const plastic = [
+		'./assets/sound/plastic/plastic_box_impact_hard1.wav',
+		'./assets/sound/plastic/plastic_box_impact_hard2.wav',
+		'./assets/sound/plastic/plastic_box_impact_hard3.wav',
+		'./assets/sound/plastic/plastic_box_impact_hard4.wav',
+		'./assets/sound/plastic/plastic_box_impact_soft1.wav',
+		'./assets/sound/plastic/plastic_box_impact_soft2.wav',
+		'./assets/sound/plastic/plastic_box_impact_soft3.wav',
+		'./assets/sound/plastic/plastic_box_impact_soft4.wav'
+	]
+
+	export const metal = [
+		'./assets/sound/metal/metal_solid_impact_hard1.wav',
+		'./assets/sound/metal/metal_solid_impact_hard4.wav',
+		'./assets/sound/metal/metal_solid_impact_hard5.wav',
+		'./assets/sound/metal/metal_solid_impact_soft1.wav',
+		'./assets/sound/metal/metal_solid_impact_soft2.wav',
+		'./assets/sound/metal/metal_solid_impact_soft3.wav',
 	]
 
 	export var buffers: any = {
@@ -49,7 +69,7 @@ namespace audio {
 		console.log('audio load');
 
 		let loads: string[] = [];
-		loads = loads.concat(cardboard);
+		loads = loads.concat(cardboard, plastic, metal);
 
 		const loader = new THREE.AudioLoader();
 		for (let path of loads) {

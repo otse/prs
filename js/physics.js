@@ -1,9 +1,10 @@
 import audio from "./audio.js";
 import day from "./day.js";
+import props from "./props.js";
 import renderer from "./renderer.js";
 var physics;
 (function (physics) {
-    physics.wireframe_helpers = false;
+    physics.wireframe_helpers = true;
     physics.materials = {};
     physics.walls = [], physics.balls = [], physics.ballMeshes = [], physics.boxes = [], physics.boxMeshes = [];
     function boot() {
@@ -154,35 +155,23 @@ var physics;
                 if (prop.parameters.mass == 0)
                     return;
                 const velocity = e.contact.getImpactVelocityAlongNormal();
+                if (velocity < 0.3)
+                    return;
                 let clamp;
                 clamp = day.clamp(mass * velocity, 0.1, 3);
                 //clamp = day.clamp(clamp, 0.1, 1);
                 clamp = day.clamp(velocity, 0.1, 1.0);
                 //console.log('velocity, clamp', velocity, clamp);
                 let sample = '';
-                if (velocity < 0.5) {
-                    console.log('soft');
-                    sample = day.sample([
-                        'cardboard_box_impact_soft1',
-                        'cardboard_box_impact_soft2',
-                        'cardboard_box_impact_soft3',
-                        'cardboard_box_impact_soft4',
-                        'cardboard_box_impact_soft5',
-                        'cardboard_box_impact_soft6',
-                        'cardboard_box_impact_soft7',
-                    ]);
+                console.log(velocity);
+                const impacts = props.impact_sounds[prop.parameters.material];
+                if (!impacts)
+                    return;
+                if (velocity < 0.6) {
+                    sample = day.sample(impacts.soft);
                 }
                 else {
-                    console.log('hard');
-                    sample = day.sample([
-                        'cardboard_box_impact_hard1',
-                        'cardboard_box_impact_hard2',
-                        'cardboard_box_impact_hard3',
-                        'cardboard_box_impact_hard4',
-                        'cardboard_box_impact_hard5',
-                        'cardboard_box_impact_hard6',
-                        'cardboard_box_impact_hard7',
-                    ]);
+                    sample = day.sample(impacts.hard);
                 }
                 let sound = audio.playOnce(sample, clamp);
                 if (sound) {
@@ -258,13 +247,20 @@ var physics;
             const pivots = [
                 [0, 0, 0.5], [0, 0, -0.5], [0.5, 0, 0], [-0.5, 0, 0]
             ];
-            const n = parseInt(this.prop.parameters.door.slice(-1)) - 1;
-            const pivot = pivots[n];
+            const hinges = [
+                [0, 0, -0.5 * size.x], [0, 0, 0.5 * size.x], [-0.5 * size.z, 0, 0], [0.5 * size.z, 0, 0]
+            ];
+            const n = parseInt(this.prop.parameters.door.slice(-1));
+            const offset = pivots[n - 1];
+            const hinge = hinges[n - 1];
+            console.log('door size', n, size);
+            const pivot = new CANNON.Vec3(size.x * offset[0] + hinge[0], 0, size.z * offset[2] + hinge[2]);
+            const axis = new CANNON.Vec3(0, 1, 0);
             const constraint = new CANNON.HingeConstraint(staticBody, hingedBody, {
-                pivotA: new CANNON.Vec3(size.x * pivot[0], 0, size.z * pivot[2]),
-                axisA: new CANNON.Vec3(0, 1, 0),
-                pivotB: new CANNON.Vec3(size.x * pivot[0], 0, size.z * pivot[2]),
-                axisB: new CANNON.Vec3(0, 1, 0),
+                pivotA: pivot,
+                axisA: axis,
+                pivotB: pivot,
+                axisB: axis
             });
             physics.world.addConstraint(constraint);
             //console.log(constraint);
