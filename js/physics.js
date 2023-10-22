@@ -238,11 +238,12 @@ var physics;
             hingedBody.position.copy(center);
             hingedBody.linearDamping = 0.25;
             physics.world.addBody(hingedBody);
-            const halfExtents2 = new CANNON.Vec3(0, size.y / 2, 0);
+            const halfExtents2 = new CANNON.Vec3(0.06, 0.06, 0.06);
             const staticShape = new CANNON.Box(halfExtents2);
             const staticBody = new CANNON.Body({ mass: 0 });
             staticBody.addShape(staticShape);
             staticBody.position.copy(center);
+            staticBody.collisionResponse = 0;
             physics.world.addBody(staticBody);
             const pivots = [
                 [0, 0, 0.5], [0, 0, -0.5], [0.5, 0, 0], [-0.5, 0, 0]
