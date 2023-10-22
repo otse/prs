@@ -185,8 +185,12 @@ var physics;
                     ]);
                 }
                 let sound = audio.playOnce(sample, clamp);
-                if (sound)
+                if (sound) {
                     prop.group.add(sound);
+                    sound.onEnded = () => {
+                        sound.removeFromParent();
+                    };
+                }
             });
             //if (!this.prop.parameters.solid)
             this.add_helper_aabb();

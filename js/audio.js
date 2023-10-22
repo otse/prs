@@ -20,7 +20,7 @@ var audio;
         './assets/sound/cardboard/cardboard_box_impact_soft6.wav',
         './assets/sound/cardboard/cardboard_box_impact_soft7.wav',
     ];
-    audio.sounds = {};
+    audio.buffers = {};
     function gesture() {
         if (gestured)
             return;
@@ -45,23 +45,22 @@ var audio;
         for (let path of loads) {
             let filename = path.replace(/^.*[\\/]/, '');
             filename = filename.split('.')[0];
-            console.log(filename);
-            audio.sounds[filename] = new THREE.PositionalAudio(listener);
             loader.load(path, function (buffer) {
-                audio.sounds[filename].setBuffer(buffer);
+                audio.buffers[filename] = buffer;
             });
         }
     }
     audio.load = load;
     function playOnce(id, volume = 1) {
-        let sound = audio.sounds[id];
-        //console.log(sound);
-        if (!sound || sound.isPlaying)
+        const buffer = audio.buffers[id];
+        if (!buffer)
             return;
-        sound.setLoop(false);
-        sound.setVolume(volume);
-        sound.play();
-        return sound;
+        let positional = new THREE.PositionalAudio(listener);
+        positional.setBuffer(buffer);
+        positional.setLoop(false);
+        positional.setVolume(volume);
+        positional.play();
+        return positional;
     }
     audio.playOnce = playOnce;
 })(audio || (audio = {}));

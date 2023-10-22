@@ -24,7 +24,7 @@ namespace audio {
 		'./assets/sound/cardboard/cardboard_box_impact_soft7.wav',
 	]
 
-	export var sounds: any = {
+	export var buffers: any = {
 	}
 
 	export function gesture() {
@@ -55,27 +55,25 @@ namespace audio {
 		for (let path of loads) {
 			let filename = path.replace(/^.*[\\/]/, '');
 			filename = filename.split('.')[0];
-			console.log(filename);
-
-			sounds[filename] = new THREE.PositionalAudio(listener);
 			loader.load(path, function (buffer) {
-				sounds[filename].setBuffer(buffer);
+				buffers[filename] = buffer;
 			});
 		}
 	}
 
 	export function playOnce(id: string, volume: number = 1) {
-		let sound = sounds[id];
-		//console.log(sound);
-
-		if (!sound || sound.isPlaying)
+		const buffer = buffers[id];
+		if (!buffer )
 			return;
 
-		sound.setLoop(false);
-		sound.setVolume(volume);
-		sound.play();
+		let positional = new THREE.PositionalAudio(listener);
+		positional.setBuffer(buffer);
+		
+		positional.setLoop(false);
+		positional.setVolume(volume);
+		positional.play();
 
-		return sound;
+		return positional;
 	}
 }
 
