@@ -24,6 +24,7 @@ var sketchup;
                 if (material.map) {
                     // mineify
                     //THREE.NearestFilter
+                    //material.map.rotation = (Math.PI * Math.random());
                     material.map.minFilter = material.map.magFilter = THREE.NearestFilter;
                     material.map.anisotropy = renderer.renderer_.capabilities.getMaxAnisotropy();
                 }

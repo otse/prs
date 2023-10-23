@@ -5,29 +5,23 @@ var props;
 (function (props_1) {
     function factory(object) {
         let prop;
-        switch (object.name) {
+        if (!object.name)
+            return;
+        const [kind, preset] = object.name.split('_');
+        switch (kind) {
+            case 'prop':
+                console.log('new prop', kind, preset);
+                prop = new pbox(object, { mass: 0, preset: preset });
+                break;
             case 'light':
-                prop = new plight(object, { mass: 0 });
+                prop = new plight(object, { mass: 0, preset: preset });
                 break;
             case 'wall':
             case 'solid':
                 prop = new pbox(object, { mass: 0 });
                 break;
-            case 'door_1':
-                // blue positive
-                prop = new pdoor(object, { mass: 0, door: 'door_1' });
-                break;
-            case 'door_2':
-                // blue negative
-                prop = new pdoor(object, { mass: 0, door: 'door_2' });
-                break;
-            case 'door_3':
-                // red positive
-                prop = new pdoor(object, { mass: 0, door: 'door_3' });
-                break;
-            case 'door_4':
-                // red negative
-                prop = new pdoor(object, { mass: 0, door: 'door_4' });
+            case 'door':
+                prop = new pdoor(object, { mass: 0, preset: preset });
                 break;
             case 'fridge':
                 prop = new pbox(object, { mass: 3, material: 'metal' });
@@ -39,10 +33,12 @@ var props;
                 prop = new pbox(object, { mass: 0.7, material: 'cardboard' });
                 break;
             case 'matress':
-                prop = new pbox(object, { mass: 2.0, material: 'cardboard' });
+                prop = new pbox(object, { mass: 1.0, material: 'cardboard' });
                 break;
             default:
         }
+        if (prop)
+            prop.kind = kind;
         return prop;
     }
     props_1.factory = factory;
@@ -77,6 +73,7 @@ var props;
     class prop {
         object;
         parameters;
+        kind;
         oldRotation;
         group;
         master;
@@ -143,16 +140,23 @@ var props;
         }
     }
     props_1.pdoor = pdoor;
+    const light_presets = {
+        sconce: { hide: false, color: 'white', intensity: 0.1, distance: 1, offset: [0, 0, -5] },
+        openwindow: { hide: true, color: 'white', intensity: 0.5, distance: 3, decay: 0.3 },
+        none: { hide: true, color: 'white', intensity: 0.1, distance: 10 }
+    };
     class plight extends prop {
         constructor(object, parameters) {
             super(object, parameters);
         }
         setup() {
             //this.object.visible = false;
+            const preset = light_presets[this.parameters.preset || 'none'];
             const center = new THREE.Vector3();
+            this.object.visible = !preset.hide;
             this.aabb.getCenter(center);
-            let light = new THREE.PointLight(0xffffff, 0.1, 10);
-            light.position.set(0, 0, -5);
+            let light = new THREE.PointLight(preset.color, preset.intensity, preset.distance, preset.decay);
+            light.position.fromArray(preset.offset || [0, 0, 0]);
             //this.group.add(new THREE.AxesHelper(10));
             this.group.add(light);
         }
