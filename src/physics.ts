@@ -5,7 +5,15 @@ import renderer from "./renderer.js";
 
 namespace physics {
 
-	export const wireframe_helpers = true;
+	const kinds_of_props = {
+		fridge: { mass: 3, material: 'metal' },
+		cup: { mass: 0.2, material: 'plastic' },
+		compactdiscs: { mass: 0.7, material: 'cardboard' },
+		matress: { mass: 1.0, material: 'cardboard' },
+		none: { mass: 0.0, material: 'cardboard' }
+	}
+
+	export const wireframe_helpers = false;
 
 	export var materials: any = {}
 
@@ -166,8 +174,10 @@ namespace physics {
 			const halfExtents = new CANNON.Vec3(size.x, size.y, size.z);
 			const boxShape = new CANNON.Box(halfExtents);
 
-			const weight = this.prop.parameters.weight;
-			const mass = this.prop.parameters.mass;
+			const kind = kinds_of_props[this.prop.parameters.preset || 'none'];
+			
+			const weight = kind.weight || 1;
+			const mass = kind.mass;
 
 			let material;
 			switch (prop.object.name) {
@@ -193,7 +203,7 @@ namespace physics {
 			//	boxBody.collisionResponse = 0;
 
 			boxBody.addEventListener("collide", function (e) {
-				if (prop.parameters.mass == 0)
+				if (kind.mass.mass == 0)
 					return;
 				const velocity = e.contact.getImpactVelocityAlongNormal();
 				if (velocity < 0.3)
@@ -206,9 +216,9 @@ namespace physics {
 				//console.log('velocity, clamp', velocity, clamp);
 
 				let sample = '';
-				console.log(velocity);
+				//console.log(velocity);
 				
-				const impacts = props.impact_sounds[prop.parameters.material];
+				const impacts = props.impact_sounds[kind.material];
 				if (!impacts)
 					return;
 				if (velocity < 0.6) {
@@ -269,7 +279,7 @@ namespace physics {
 
 	}
 
-	const door_arbitrary_shrink = 0.88;
+	const door_arbitrary_shrink = 0.95;
 
 	export class fdoor extends fbody {
 		constraint
@@ -289,10 +299,10 @@ namespace physics {
 			const halfExtents = new CANNON.Vec3(shrink.x, shrink.y, shrink.z);
 			const hingedShape = new CANNON.Box(halfExtents);
 
-			const hingedBody = new CANNON.Body({ mass: 0.5 });
+			const hingedBody = new CANNON.Body({ mass: 1.5 });
 			hingedBody.addShape(hingedShape);
 			hingedBody.position.copy(center);
-			hingedBody.linearDamping = 0.25;
+			hingedBody.linearDamping = 0.4;
 			world.addBody(hingedBody);
 
 			const halfExtents2 = new CANNON.Vec3(0.06, 0.06, 0.06);
@@ -310,9 +320,9 @@ namespace physics {
 				[0, 0, -0.5 * size.x], [0, 0, 0.5 * size.x], [-0.5 * size.z, 0, 0], [0.5 * size.z, 0, 0]
 			];
 			
-			const n = parseInt(this.prop.parameters.door!.slice(-1));
-			const offset = pivots[n - 1];
-			const hinge = hinges[n - 1];
+			const n = parseInt(this.prop.parameters.preset) - 1;
+			const offset = pivots[n];
+			const hinge = hinges[n];
 			console.log('door size', n, size);
 			const pivot = new CANNON.Vec3(size.x * offset[0] + hinge[0], 0, size.z * offset[2] + hinge[2]);
 			const axis = new CANNON.Vec3(0, 1, 0);

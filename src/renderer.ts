@@ -127,7 +127,7 @@ namespace renderer {
 		renderer_.setClearColor(0xffffff, 0.0);
 		//renderer_.toneMapping = THREE.ReinhardToneMapping;
 
-		ambiance = new THREE.AmbientLight(0xffffff, 2);
+		ambiance = new THREE.AmbientLight(0xffffff, 1);
 		scene.add(ambiance);
 
 		let sun = new THREE.DirectionalLight(0xffffff, 2);
@@ -136,7 +136,7 @@ namespace renderer {
 		sun.shadow.camera.near = 0.5;
 		sun.shadow.camera.far = 500;
 		const extend = 1000;
-		sun.position.set(-30, 200, -150);
+		sun.position.set(-30, 100, -150);
 		sun.castShadow = true;
 		scene.add(sun);
 		scene.add(sun.target);
