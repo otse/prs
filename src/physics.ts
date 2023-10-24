@@ -6,6 +6,7 @@ import renderer from "./renderer.js";
 namespace physics {
 
 	const kinds_of_props = {
+		floppy: { mass: 0.1, material: 'plastic' },
 		fridge: { mass: 3, material: 'metal' },
 		cup: { mass: 0.2, material: 'plastic' },
 		compactdiscs: { mass: 0.7, material: 'cardboard' },
@@ -39,7 +40,7 @@ namespace physics {
 		// use this to test non-split solver
 		// world.solver = solver
 
-		world.gravity.set(0, -20, 0);
+		world.gravity.set(0, -10, 0);
 
 		// Create a slippery material (friction coefficient = 0.0)
 		materials.player = new CANNON.Material('player');
@@ -203,7 +204,7 @@ namespace physics {
 			//	boxBody.collisionResponse = 0;
 
 			boxBody.addEventListener("collide", function (e) {
-				if (kind.mass.mass == 0)
+				if (mass == 0)
 					return;
 				const velocity = e.contact.getImpactVelocityAlongNormal();
 				if (velocity < 0.3)
@@ -317,13 +318,16 @@ namespace physics {
 				[0, 0, 0.5], [0, 0, -0.5], [0.5, 0, 0], [-0.5, 0, 0]
 			];
 			const hinges = [
-				[0, 0, -0.5 * size.x], [0, 0, 0.5 * size.x], [-0.5 * size.z, 0, 0], [0.5 * size.z, 0, 0]
+				[0, 0, -0.5 * size.x],
+				[0, 0, 0.5 * size.x],
+				[-0.5 * size.z, 0, 0],
+				[0.5 * size.z, 0, 0]
 			];
 			
 			const n = parseInt(this.prop.parameters.preset) - 1;
 			const offset = pivots[n];
 			const hinge = hinges[n];
-			console.log('door size', n, size);
+			//console.log('door size', n, size);
 			const pivot = new CANNON.Vec3(size.x * offset[0] + hinge[0], 0, size.z * offset[2] + hinge[2]);
 			const axis = new CANNON.Vec3(0, 1, 0);
 			const constraint = new CANNON.HingeConstraint(staticBody, hingedBody, {

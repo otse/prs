@@ -12,29 +12,17 @@ namespace props {
 		switch (kind) {
 			case 'prop':
 				console.log('new prop', kind, preset);
-				prop = new pbox(object, { mass: 0, preset: preset });
+				prop = new pbox(object, { preset: preset });
 				break;
 			case 'light':
-				prop = new plight(object, { mass: 0, preset: preset });
+				prop = new plight(object, { preset: preset });
 				break;
 			case 'wall':
 			case 'solid':
-				prop = new pbox(object, { mass: 0 });
+				prop = new pbox(object, {});
 				break;
 			case 'door':
-				prop = new pdoor(object, { mass: 0, preset: preset });
-				break;
-			case 'fridge':
-				prop = new pbox(object, { mass: 3, material: 'metal' });
-				break;
-			case 'cup':
-				prop = new pbox(object, { mass: 0.2, material: 'plastic' });
-				break;
-			case 'compactdiscs':
-				prop = new pbox(object, { mass: 0.7, material: 'cardboard' });
-				break;
-			case 'matress':
-				prop = new pbox(object, { mass: 1.0, material: 'cardboard' });
+				prop = new pdoor(object, { preset: preset });
 				break;
 			default:
 		}
@@ -83,10 +71,6 @@ namespace props {
 
 	interface iparameters {
 		preset?: any;
-		material?: string;
-		weight?: number;
-		mass: number;
-		wall?: boolean;
 	};
 
 	export class prop {
@@ -123,7 +107,6 @@ namespace props {
 
 			this.object.rotation.set(-Math.PI / 2, 0, 0);
 			this.object.position.set(-size.x / 2, -size.y / 2, size.z / 2);
-
 		}
 	}
 
